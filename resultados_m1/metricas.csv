@@ -1,0 +1,6 @@
+Modelo,Experimento,Inicio_teste,Fim_teste,MAE_m3s,RMSE_m3s,NSE,Vies_m3s,N_teste
+Persistencia,periodo_comum,1988-10-01,1993-05-01,290.55,533.08,0.275,-1.88,56
+Autorregressivo,periodo_comum,1988-10-01,1993-05-01,263.0,410.44,0.57,41.52,56
+Hidrometeorologico,periodo_comum,1988-10-01,1993-05-01,231.91,363.01,0.664,30.17,56
+Autorregressivo,serie_longa,2000-12-01,2023-11-01,240.99,367.63,0.603,48.95,276
+Persistencia,serie_longa,2000-12-01,2023-11-01,281.38,463.6,0.368,2.41,276

@@ -1,0 +1,3 @@
+Modelo,Inicio_teste,Fim_teste,N_teste,MAE_m3s,RMSE_m3s,NSE,Vies_m3s
+Persistencia,2025-01-01,2026-09-01,21,247.76,350.49,0.461,29.1
+Autorregressivo,2025-01-01,2026-09-01,21,199.59,261.14,0.701,64.64

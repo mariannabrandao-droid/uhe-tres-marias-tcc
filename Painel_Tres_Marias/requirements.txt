@@ -1,0 +1,7 @@
+streamlit==1.52.2
+plotly==6.5.0
+pandas==2.2.3; python_version < "3.14"
+pandas==2.3.3; python_version >= "3.14"
+numpy==2.3.5
+
+truststore==0.10.4

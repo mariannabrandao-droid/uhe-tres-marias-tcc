@@ -1,0 +1,227 @@
+"""Blocos de consulta da defesa, integrados às páginas existentes."""
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
+
+from analise_defesa import BLOCKS, ZCAS
+from figuras_tcc import ASSETS, MONTHS, NOAA, NOAA_DATA, OCT_MAR, blocking_seasonality, historical_flows, oni_series, zcas_annual
+from hidroclima import ROOT
+import operacao_ons as ons
+from mapas import regional_map
+
+
+def context_figures(figure):
+    regional = regional_map()
+    regional.update_layout(title='Figura 2 · Três Marias na Região Hidrográfica São Francisco')
+    with st.expander('Figuras 2 e 3 do TCC · bacia e sistema de reservatórios', expanded=True):
+        figure(regional, 'tcc_fig02',
+               'Limite da Região Hidrográfica São Francisco e posto do Barramento. '
+               'Redesenho da localização com a divisão hidrográfica e o cadastro ANA/SNIRH. '
+               'O contorno cobre toda a região hidrográfica.')
+        nodes = [
+            ('Três Marias', 0, 0, '396 MW · 19 bilhões m³ totais · 15 bilhões m³ úteis'),
+            ('Sobradinho', 0, 1, '1.050 MW · 34 bilhões m³ totais · 28 bilhões m³ úteis'),
+            ('Itaparica', 0, 2, '1.500 MW · 10 bilhões m³ totais · 3 bilhões m³ úteis'),
+            ('Moxotó', 0, 3, '400 MW'),
+            ('Paulo Afonso I–III', 0, 4, 'I: 180 MW · II: 445 MW · III: 800 MW'),
+            ('Paulo Afonso IV', -.55, 4, '2.460 MW'),
+            ('Xingó', 0, 5, '3.000 MW'),
+        ]
+        chart = go.Figure()
+        for route in ((0, 1, 2, 3, 4, 6), (2, 5, 6)):
+            chart.add_scatter(x=[nodes[i][1] for i in route], y=[nodes[i][2] for i in route],
+                              mode='lines', line={'color': '#38829f'}, hoverinfo='skip', showlegend=False)
+        names, x, y, values = zip(*nodes)
+        chart.add_scatter(x=x, y=y, mode='markers', marker={'size': 13, 'color': '#087eae'},
+                          text=names, customdata=values, showlegend=False,
+                          hovertemplate='<b>%{text}</b><br>%{customdata}<extra></extra>')
+        for name, position, row, _ in nodes:
+            chart.add_annotation(x=position, y=row, text=name, showarrow=False, xanchor='left', xshift=10)
+        chart.update_layout(title='Figura 3 · Principais aproveitamentos no São Francisco', height=385,
+                            hovermode='closest',
+                            yaxis=dict(visible=False, range=[5.45, -.45], fixedrange=True),
+                            xaxis=dict(visible=False, range=[-.68, .78], fixedrange=True))
+        figure(chart, 'tcc_fig03', 'Esquema de montante a jusante, sem escala. Passe sobre os pontos para '
+               'ver as potências e os volumes indicados na figura histórica da ANA (2013) citada no TCC. '
+               'Os valores retratam essa referência.')
+
+
+def historical_figures(figure, frame):
+    with st.expander('Figuras 1 e 4 do TCC · vazões históricas'):
+        flows = historical_flows()
+        monthly = flows.iloc[:, :12]
+        chart = go.Figure()
+        for size in (93, 50, 30, 10):
+            sample = monthly.tail(size)
+            chart.add_scatter(x=MONTHS, y=sample.mean(), mode='lines+markers',
+                              name=f'{sample.index.min()}–{sample.index.max()}')
+        chart.update_layout(title='Figura 1 · Vazão média por mês e janela histórica',
+                            yaxis_title='Vazão (m³/s)', xaxis_title='Mês do calendário')
+        figure(chart, 'tcc_fig01', 'Fonte: planilha histórica Três Marias (156) do acervo do TCC. '
+               'Cada curva é a média de um mesmo mês do calendário entre os anos indicados.')
+        chart = go.Figure(go.Scatter(x=flows.index, y=flows.media_anual_m3s, mode='lines',
+                                     hovertemplate='%{x}: %{y:.2f} m³/s<extra></extra>'))
+        chart.update_layout(title='Figura 4 · Vazão média anual em Três Marias', yaxis_title='Vazão (m³/s)', xaxis_title='Ano')
+        chart.update_xaxes(tickmode='array', tickvals=[1931, *range(1940, 2020, 10), 2023], tickangle=0)
+        figure(chart, 'tcc_fig04', 'Fonte: planilha histórica Três Marias (156) do acervo do TCC, coluna jan–dez. '
+               'Média aritmética das 12 vazões mensais de cada ano, de 1931 a 2023. '
+               'A planilha está incluída para rastreabilidade. A origem institucional da série ainda requer confirmação.')
+        st.download_button('Baixar série histórica de vazão das Figuras 1 e 4',
+                           (ASSETS / 'vazao_1931_2023.csv').read_bytes(), 'vazao_1931_2023.csv', 'text/csv')
+    with st.expander('Figuras 6 e 7 do TCC · ZCAS e bloqueios'):
+        region = st.selectbox('Região do índice de ZCAS', ZCAS, format_func=lambda key: key.split('_')[1])
+        values = zcas_annual(frame[region])
+        chart = go.Figure()
+        for name in values:
+            chart.add_scatter(x=values.index, y=values[name], name=name, mode='lines', connectgaps=False)
+        chart.update_layout(title=f'Figura 6 · Índice anual da ZCAS na região {region.split("_")[1]}',
+                            xaxis_title='Ano', yaxis_title='Índice ZCAS (adimensional)')
+        chart.update_xaxes(tickmode='array', tickvals=[1961, 1970, 1980, 1990, 2000, 2010, 2023], tickformat='d')
+        figure(chart, 'tcc_fig06', 'Fonte: índice diário do acervo climático, 1961–2023. Médias anuais '
+               'das 12 médias mensais, seguidas de médias móveis retrospectivas de 3 e 5 anos completos. '
+               'O índice quantifica o sinal associado à atuação da ZCAS. A contagem de eventos exige um critério de detecção.')
+        st.download_button('Baixar série anual da ZCAS', values.to_csv(index_label='ano').encode('utf-8-sig'),
+                           'zcas_anual.csv', 'text/csv')
+        region = st.selectbox('Região de bloqueio atmosférico', list(BLOCKS))
+        seasonal = blocking_seasonality(frame[region])
+        chart = go.Figure(go.Bar(x=MONTHS, y=seasonal['mean'], customdata=seasonal['count'],
+                                 marker_color=['#087eae' if m in OCT_MAR else '#98afbe' for m in range(1,13)],
+                                 hovertemplate='%{x}: %{y:.2f} dias · %{customdata} anos<extra></extra>'))
+        chart.update_layout(title=f'Figura 7 · Sazonalidade mensal dos bloqueios ({region})',
+                            yaxis_title='Média de dias sinalizados por mês', xaxis_title='Mês')
+        figure(chart, 'tcc_fig07', 'Fonte: campos diários de bloqueio do acervo climático, 1961–2023. '
+               'A média usa meses completos. As barras azuis destacam outubro–março, '
+               'janela usada para comparar bloqueios com ZCAS na aba Associações climáticas.')
+        st.download_button('Baixar sazonalidade dos bloqueios', seasonal.to_csv(index_label='mes').encode('utf-8-sig'),
+                           'sazonalidade_bloqueios.csv', 'text/csv')
+
+
+def climate_references(figure):
+    with st.expander('Figura 5 do TCC · precipitação e vazão normalizadas'):
+        path = ASSETS / 'treistman_fig4_digitizada.csv'
+        values = pd.read_csv(path)
+        chart = go.Figure()
+        for field, label in [('precipitacao_normalizada', 'Precipitação anual'),
+                             ('vazao_normalizada', 'Vazão natural anual')]:
+            chart.add_scatter(x=values.ano, y=values[field], name=label, mode='lines+markers',
+                              marker={'size': 4}, hovertemplate='%{x}: ≈%{y:.2f}<extra>%{fullData.name}</extra>')
+        chart.update_layout(title='Figura 5 · Precipitação e vazão natural anuais normalizadas',
+                            xaxis_title='Ano', yaxis_title='Valor normalizado (adimensional)')
+        chart.update_xaxes(tickmode='array', tickvals=[1943, 1950, 1960, 1970, 1980, 1990, 2000, 2005])
+        figure(chart, 'tcc_fig05', 'Treistman et al. (2015), figura 4, 1943–2005. Valores aproximados '
+               'digitalizados das curvas publicadas. O artigo reporta r = 0,75 para as séries originais. '
+               'Use o redesenho para acompanhar a variação, com os valores originais a consultar junto aos autores.')
+        st.link_button('Abrir publicação de Treistman et al.',
+                       'https://files.abrhidro.org.br/Eventos/Trabalhos/4/PAP019701.pdf')
+        st.download_button('Baixar pontos digitalizados da Figura 5', path.read_bytes(), path.name, 'text/csv')
+    with st.expander('Contexto oceânico · índice ONI da NOAA'):
+        oni = oni_series()
+        chart = go.Figure(go.Scatter(x=oni.index, y=oni, mode='lines', name='ONI', connectgaps=False))
+        chart.add_hline(y=0, line_color='#98afbe')
+        chart.update_layout(title='Índice Oceânico Niño (ONI)', yaxis_title='Anomalia (°C)', xaxis_title='Mês central')
+        figure(chart, 'tcc_oni', 'Fonte: NOAA/CPC, cópia local da série histórica. O ONI representa uma média móvel '
+               'trimestral na região Niño 3.4. Cada trimestre é posicionado no mês central.')
+        st.write('A série contextualiza o ENSO. Uma associação com o clima regional depende do recorte, '
+                 'da cobertura e do método. O Ridge reproduzido usa vazão e sazonalidade.')
+        st.markdown(f'[Catálogo NOAA/CPC]({NOAA}) · [Arquivo original]({NOAA_DATA})')
+
+
+def october_projection_verification(path, figure, table):
+    st.subheader('Outubro de 2026 · estimativa M+1 e verificação')
+    projection = pd.read_csv(path / 'projecoes.csv', parse_dates=['alvo', 'origem', 'emissao'])
+    october = pd.Timestamp('2026-10-01')
+    archived = projection.loc[projection.alvo.eq(october) & projection.horizonte.eq(1)]
+    if archived.empty:
+        st.info('Estimativas arquivadas de outubro indisponíveis.')
+        return
+    daily = ons.read('diario')
+    month = ons.slice_days(daily, october, october + pd.offsets.MonthEnd())
+    expected = pd.date_range(october, october + pd.offsets.MonthEnd())
+    actual = month.set_index(ons.STAMP).val_vazaonatural.sort_index()
+    valid_days = actual[np.isfinite(actual)].index.intersection(expected)
+    verified = actual.mean() if actual.index.equals(expected) and len(valid_days) == len(expected) else np.nan
+    reference = archived.iloc[0]
+    st.caption(f'Origem dos dados: {reference.origem:%m/%Y} (SAR). '
+               f'Data de emissão arquivada: {reference.emissao:%d/%m/%Y}. '
+               'Outubro já havia terminado nessa data. A estimativa é retrospectiva.')
+    result = archived[['modelo', 'previsto']].rename(columns={
+        'modelo': 'Método', 'previsto': 'Estimativa (m³/s)',
+    }).copy()
+    if pd.notna(verified):
+        st.metric('Vazão natural média verificada pelo ONS', f'{verified:.2f}'.replace('.', ',') + ' m³/s')
+        st.caption(f'Cobertura: {len(valid_days)}/{len(expected)} dias com vazão natural. '
+                   'Média aritmética dos registros diários do reservatório SFTMAR.')
+        result['Diferença: estimativa − ONS (m³/s)'] = result['Estimativa (m³/s)'] - verified
+        result['Erro absoluto (m³/s)'] = result['Diferença: estimativa − ONS (m³/s)'].abs()
+        chart = px.bar(result, x='Método', y='Estimativa (m³/s)', color_discrete_sequence=['#087eae'],
+                       title='Outubro de 2026 · estimativas M+1 e média verificada')
+        chart.add_hline(y=verified, line_dash='dash', line_color='#a63f2b',
+                        annotation_text=f'ONS: {verified:.2f} m³/s'.replace('.', ','))
+        figure(chart, 'october_projection_chart',
+               'Acima da linha tracejada, o método superestimou a vazão. Abaixo, subestimou.')
+        closest = result.loc[result['Erro absoluto (m³/s)'].idxmin(), 'Método']
+        st.write(f'**{closest}** ficou mais perto da referência neste mês. Para escolher uma abordagem por '
+                 'horizonte, compare também o desempenho nos 21 meses e no recorte de baixa vazão.')
+    else:
+        st.info(f'Média mensal não exibida. Cobertura: {len(valid_days)}/{len(expected)} dias válidos. '
+                'A verificação exige exatamente um valor por dia.')
+    table(result.round(2))
+    st.markdown('O SAR é a fonte do treinamento e da auditoria histórica. O ONS fornece a referência '
+                'externa para este mês. Esta diferença pontual fica fora do MAE dos 21 meses do backtest. '
+                f'[Base hidráulica diária do ONS]({ons.SOURCES["diario"]}).')
+
+
+def ridge_audit(figure, table):
+    with st.expander('Previsão mensal experimental · Ridge, persistência e climatologia'):
+        path = ROOT / 'historico_desenvolvimento' / 'resultados_entrega'
+        raw = pd.read_csv(path / 'backtest.csv', parse_dates=['alvo'])
+        audit = raw.loc[raw.etapa.eq('Auditoria') & raw.horizonte.isin((1, 2))].copy()
+        h = st.radio('Horizonte da auditoria', [1, 2], format_func=lambda n: f'M+{n}', horizontal=True)
+        sample = audit.loc[audit.horizonte.eq(h)]
+        values = sample.pivot(index='alvo', columns='modelo', values='previsto').join(
+            sample.groupby('alvo').observado.first().rename('Observado'))
+        chart = px.line(values, markers=True, title=f'Vazão natural observada e prevista · M+{h}',
+                        labels={'alvo':'Mês-alvo', 'value': 'Vazão natural (m³/s)', 'variable':'Série'})
+        chart.update_xaxes(range=[values.index.min() - pd.Timedelta(days=15),
+                                  values.index.max() + pd.Timedelta(days=15)],
+                           tickformat='%m/%Y', dtick='M3')
+        figure(chart, 'tcc_ridge', 'Fonte: SAR e reexecução do protocolo de validação temporal arquivado no pacote. '
+               'Auditoria em 21 meses-alvo, de janeiro de 2025 a setembro de 2026, para cada horizonte.')
+        error = values.drop(columns='Observado').sub(values.Observado, axis=0).abs()
+        masks = {'Todos': values.Observado.notna(), 'Maio–outubro': values.index.month.isin((5,6,7,8,9,10)),
+                 'Vazão natural < 150 m³/s': values.Observado.lt(150)}
+        table(pd.DataFrame([{'Recorte': label, 'Meses': int(mask.sum()), **error.loc[mask].mean().round(2).to_dict()}
+                            for label, mask in masks.items()]))
+        st.caption('A tabela resume os erros absolutos médios (m³/s).')
+        st.write('No gráfico, observe onde as previsões se afastam da série observada nos picos e vales. '
+                 'Antes de escolher uma referência para meses secos, compare a linha **Maio–outubro** '
+                 'e o recorte de **vazão natural abaixo de 150 m³/s**, com atenção ao número de casos.')
+        st.write('O Ridge usa vazões defasadas e termos sazonais. Nos dois horizontes, reduz o erro global frente '
+                 'à persistência. A climatologia tem o menor erro global. O recorte abaixo de 150 m³/s tem quatro '
+                 'meses por horizonte e serve para avaliar limitações do experimento.')
+        st.download_button('Baixar auditoria Ridge e referências', sample.to_csv(index=False).encode('utf-8-sig'),
+                           f'auditoria_m{h}.csv', 'text/csv')
+        october_projection_verification(path, figure, table)
+
+
+def methodology_figures(table):
+    with st.expander('Quadros 1 e 2 do TCC · referências e métodos'):
+        st.markdown('**Quadro 1 · Organização bibliográfica**')
+        table(pd.DataFrame([
+            ('Planejamento hidroenergético', 'Falcetta, Ramos e Cicogna', 'Otimização do sistema e custo operativo'),
+            ('Modelagem hidrológica', 'Mine e Tucci, Paiva, Pires e Beven', 'Relação chuva–vazão e previsão de afluências'),
+            ('Séries temporais', 'Silva, Baver, Bos e Stedinger', 'Sazonalidade, tendências e previsibilidade'),
+            ('Climatologia', 'Cataldi e Carvalho', 'Interpretação da variabilidade atmosférica'),
+            ('Gestão hídrica', 'Melo, Loures, Amaral e Pinheiro', 'Vazões de referência e usos da água'),
+        ], columns=['Linha de investigação', 'Autores citados no quadro', 'Contribuição']))
+        st.markdown('**Quadro 2 · Abordagens e metodologias na literatura**')
+        table(pd.DataFrame([
+            ('Otimização hidroenergética', 'Planejamento da geração e custos', 'Requer representação do sistema e restrições operativas'),
+            ('Modelagem chuva–vazão', 'Previsão hidrológica e alertas', 'Requer densidade de dados e calibração'),
+            ('Séries temporais', 'Sazonalidade e comportamento temporal', 'O desempenho em extremos precisa ser avaliado'),
+            ('Séries históricas observadas', 'Disponibilidade e vazões de referência', 'Depende da cobertura e consistência dos dados'),
+        ], columns=['Abordagem', 'Objetivo', 'Limite para este estudo']))
+        st.caption('Síntese dos dois quadros do Word. O painel aplica análise de séries históricas e '
+                   'avalia a previsão experimental de vazão natural mensal.')

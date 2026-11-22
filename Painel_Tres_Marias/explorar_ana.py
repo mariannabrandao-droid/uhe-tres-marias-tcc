@@ -29,7 +29,7 @@ def cached_series(code, variable, start, end, level):
 
 
 def download(frame, label, filename):
-    st.download_button(label, frame.to_csv(index=False).encode('utf-8-sig'), filename, 'text/csv')
+    st.download_button(label, frame.to_csv(index=False).encode('utf-8-sig'), filename, 'text/csv', on_click='ignore')
 
 
 def station_map(stations, location):

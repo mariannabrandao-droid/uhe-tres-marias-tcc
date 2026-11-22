@@ -89,9 +89,11 @@ def associations(data, predictors, target, season='Todos', anomalies=True, lags=
     for lag in lags:
         pairs = pair_matrix(data, predictors, target, lag, season)
         values = _coefficients(pairs, anomalies)
-        years = sorted(set((pairs.index + pd.DateOffset(months=2)).year))
+        target_months = pairs.index + pd.DateOffset(months=lag)
+        water_year = (target_months + pd.DateOffset(months=2)).year
+        years = sorted(set(water_year))
         trials = pd.DataFrame([
-            _coefficients(pairs[(pairs.index + pd.DateOffset(months=2)).year != year], anomalies)
+            _coefficients(pairs[water_year != year], anomalies)
             for year in years
         ], columns=predictors)
         for name in predictors:

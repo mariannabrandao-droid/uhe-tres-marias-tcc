@@ -1,6 +1,3 @@
-from preparar_dados import preparar_dados
-preparar_dados()
-
 """Painel Streamlit e percurso de defesa do TCC."""
 from base64 import b64encode
 
@@ -18,51 +15,54 @@ from informes_ana import INDEX as ANA_BOLETINS, fetch_bulletins, saved_bulletins
 import operacao_ons as ons
 from defluencia_diurna import THRESHOLD, analyze, hourly_intervals
 from hidroclima import DATA, FLOW, ISSUE, LABELS, ROOT, SAR, unit
-from analise_defesa import associations, low_runs
+from analise_defesa import CLIMATE, associations, climate_series, low_runs
 from mapas import climate_map, network_map
+from preparar_dados import preparar_dados
 from evidencia_jusante import STATION, compare, load_station_csv
 
-st.set_page_config(page_title='Três Marias | Observatório Hidroclimático',page_icon='🌊',layout='wide',initial_sidebar_state='expanded')
-st.markdown("""<style>
+def configure_page(title):
+    preparar_dados()
+    st.set_page_config(page_title=title, page_icon='🌊', layout='wide', initial_sidebar_state='auto')
+    st.markdown("""<style>
 
-:root{--navy:#09233e;--navy2:#113957;--teal:#0b9a9c;--bg:#f3f7fb;--muted:#71839a;--line:#e1eaf2}
-html,body,[class*=css],.stApp{font-family:'DM Sans',sans-serif!important}
-.stApp,[data-testid=stAppViewContainer]{background:var(--bg)}
-[data-testid=stHeader]{background:transparent;height:2.4rem}
-[data-testid=stSidebar]{background:linear-gradient(180deg,#0a2744 0%,#102f4d 65%,#0b253f 100%)!important;border-right:1px solid #24415c}
-[data-testid=stSidebar] *{color:#e8f3fa!important}
-[data-testid=stSidebar] .stRadio label{padding:7px 10px;border-radius:10px;margin:1px 0;font-size:0.88rem}
-[data-testid=stSidebar] .stRadio label:has(input:checked){background:#1b506c!important;border-left:3px solid #4bd0c7}
-[data-testid=stSidebar] [data-testid=stAlert]{background:#183e58!important;border:1px solid #2c6077!important}
-[data-testid=stSidebar] hr{border-color:#35516a}
-.block-container{max-width:1500px!important;padding:1.4rem 2.6rem 5rem!important}
-h1,h2,h3,h4{font-family:'Manrope',sans-serif!important;color:#132d48!important;letter-spacing:-.03em}
-h1{font-size:1.8rem!important;font-weight:800!important;margin-bottom:1rem!important}
-h2{font-size:1.24rem!important}h3{font-size:1.03rem!important}
-.hero{display:flex;align-items:center;gap:25px;background:#fff;border:1px solid #dbe8f3;border-left:5px solid #1161a8;border-radius:18px;padding:29px 34px;color:#fff;margin-bottom:19px;box-shadow:0 12px 35px #102f4b12;position:relative;overflow:hidden}
-.hero:after{content:'';position:absolute;right:-35px;top:-90px;width:330px;height:260px;border-radius:50%;border:45px solid #ffffff0c}
-.hero h1{color:#123450!important;font-size:1.9rem!important;margin:0 0 5px!important}
-.hero p{color:#395a74;margin:0;font-size:.92rem}.hero .eyebrow{font-size:.73rem;font-weight:800;letter-spacing:.14em;color:#61d3cc;margin-bottom:10px}
-div[data-testid=stMetric]{background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px 20px;box-shadow:0 5px 15px #15334d08;min-height:114px;border-top:3px solid #18a3a8}
-[data-testid=stMetricLabel]{font-size:.84rem!important;color:#60758b!important}
-[data-testid=stMetricValue]{font-size:1.75rem!important;font-weight:800!important;color:#102e49!important}
-[data-testid=stVerticalBlockBorderWrapper]{border-radius:16px!important;border-color:var(--line)!important}
-.stPlotlyChart{background:white;border-radius:16px;border:1px solid var(--line);padding:9px 12px;box-shadow:0 5px 20px #16374b09;overflow:hidden}
-[data-testid=stDataFrame]{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
-[data-testid=stAlert]{border-radius:12px!important}
-.stButton>button,.stDownloadButton>button{background:#0d6e81;color:white;border:none;border-radius:10px;font-weight:700;padding:9px 18px}
-.stButton>button:hover,.stDownloadButton>button:hover{background:#0a4c66;color:white}
-[data-testid=stSelectbox], [data-testid=stMultiSelect], [data-testid=stSlider]{border-radius:10px}
-.smallhead{font-size:.72rem;font-weight:800;letter-spacing:.13em;color:#0b9298;margin-bottom:4px}
-.sectionintro{color:#6b7d90;font-size:.92rem;margin-top:-.65rem;margin-bottom:1.2rem}
-.pill{display:inline-block;background:#e1f4f4;border:1px solid #b8e4e4;color:#176d76;border-radius:20px;font-size:.74rem;padding:4px 11px;margin:0 5px 7px 0;font-weight:700}
-.footerline{margin-top:25px;padding-top:16px;border-top:1px solid #d9e5ed;color:#788a9a;font-size:.78rem}
-.stApp [data-testid='stSidebar'] [role='radiogroup'] label{transition:background .2s ease}.stApp [data-testid='stSidebar'] [role='radiogroup'] label:hover{background:#19445d!important}.stApp [data-testid='stHorizontalBlock']{align-items:stretch}.stApp [data-testid='stMetric']{height:100%}.stApp [data-testid='stDataFrame']{font-size:.86rem}.stApp .stTabs [data-baseweb='tab']{font-weight:700}.insight{background:#eff8fb;border-left:4px solid #0d9eaa;padding:13px 17px;border-radius:10px;color:#21465b;margin:12px 0}.warningbox{background:#fff6e8;border-left:4px solid #e59a31;padding:13px 17px;border-radius:10px;color:#70542b;margin:12px 0}@media(max-width:850px){.block-container{padding:1rem .8rem 3rem!important}.hero{padding:21px}.hero h1{font-size:1.45rem!important}}
-</style>""",unsafe_allow_html=True)
-logo = b64encode((ROOT / 'assets' / 'logo_uff.png').read_bytes()).decode('ascii')
-st.markdown(f'<div class="hero"><img src="data:image/png;base64,{logo}" width="72" alt="Universidade Federal Fluminense">'
-            '<div><h1>UHE Três Marias</h1><p>Painel hidroclimático do Rio São Francisco</p></div></div>',
-            unsafe_allow_html=True)
+    :root{--navy:#09233e;--navy2:#113957;--teal:#0b9a9c;--bg:#f3f7fb;--muted:#71839a;--line:#e1eaf2}
+    html,body,[class*=css],.stApp{font-family:'DM Sans',sans-serif!important}
+    .stApp,[data-testid=stAppViewContainer]{background:var(--bg)}
+    [data-testid=stHeader]{background:transparent;height:2.4rem}
+    [data-testid=stSidebar]{background:linear-gradient(180deg,#0a2744 0%,#102f4d 65%,#0b253f 100%)!important;border-right:1px solid #24415c}
+    [data-testid=stSidebar] *{color:#e8f3fa!important}
+    [data-testid=stSidebar] .stRadio label{padding:7px 10px;border-radius:10px;margin:1px 0;font-size:0.88rem}
+    [data-testid=stSidebar] .stRadio label:has(input:checked){background:#1b506c!important;border-left:3px solid #4bd0c7}
+    [data-testid=stSidebar] [data-testid=stAlert]{background:#183e58!important;border:1px solid #2c6077!important}
+    [data-testid=stSidebar] hr{border-color:#35516a}
+    .block-container{max-width:1500px!important;padding:1.4rem 2.6rem 5rem!important}
+    h1,h2,h3,h4{font-family:'Manrope',sans-serif!important;color:#132d48!important;letter-spacing:-.03em}
+    h1{font-size:1.8rem!important;font-weight:800!important;margin-bottom:1rem!important}
+    h2{font-size:1.24rem!important}h3{font-size:1.03rem!important}
+    .hero{display:flex;align-items:center;gap:25px;background:#fff;border:1px solid #dbe8f3;border-left:5px solid #1161a8;border-radius:18px;padding:29px 34px;color:#fff;margin-bottom:19px;box-shadow:0 12px 35px #102f4b12;position:relative;overflow:hidden}
+    .hero:after{content:'';position:absolute;right:-35px;top:-90px;width:330px;height:260px;border-radius:50%;border:45px solid #ffffff0c}
+    .hero h1{color:#123450!important;font-size:1.9rem!important;margin:0 0 5px!important}
+    .hero p{color:#395a74;margin:0;font-size:.92rem}.hero .eyebrow{font-size:.73rem;font-weight:800;letter-spacing:.14em;color:#61d3cc;margin-bottom:10px}
+    div[data-testid=stMetric]{background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px 20px;box-shadow:0 5px 15px #15334d08;min-height:114px;border-top:3px solid #18a3a8}
+    [data-testid=stMetricLabel]{font-size:.84rem!important;color:#60758b!important}
+    [data-testid=stMetricValue]{font-size:1.75rem!important;font-weight:800!important;color:#102e49!important}
+    [data-testid=stVerticalBlockBorderWrapper]{border-radius:16px!important;border-color:var(--line)!important}
+    .stPlotlyChart{background:white;border-radius:16px;border:1px solid var(--line);padding:9px 12px;box-shadow:0 5px 20px #16374b09;overflow:hidden}
+    [data-testid=stDataFrame]{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+    [data-testid=stAlert]{border-radius:12px!important}
+    .stButton>button,.stDownloadButton>button{background:#0d6e81;color:white;border:none;border-radius:10px;font-weight:700;padding:9px 18px}
+    .stButton>button:hover,.stDownloadButton>button:hover{background:#0a4c66;color:white}
+    [data-testid=stSelectbox], [data-testid=stMultiSelect], [data-testid=stSlider]{border-radius:10px}
+    .smallhead{font-size:.72rem;font-weight:800;letter-spacing:.13em;color:#0b9298;margin-bottom:4px}
+    .sectionintro{color:#6b7d90;font-size:.92rem;margin-top:-.65rem;margin-bottom:1.2rem}
+    .pill{display:inline-block;background:#e1f4f4;border:1px solid #b8e4e4;color:#176d76;border-radius:20px;font-size:.74rem;padding:4px 11px;margin:0 5px 7px 0;font-weight:700}
+    .footerline{margin-top:25px;padding-top:16px;border-top:1px solid #d9e5ed;color:#788a9a;font-size:.78rem}
+    .stApp [data-testid='stSidebar'] [role='radiogroup'] label{transition:background .2s ease}.stApp [data-testid='stSidebar'] [role='radiogroup'] label:hover{background:#19445d!important}.stApp [data-testid='stHorizontalBlock']{align-items:stretch}.stApp [data-testid='stMetric']{height:100%}.stApp [data-testid='stDataFrame']{font-size:.86rem}.stApp .stTabs [data-baseweb='tab']{font-weight:700}.insight{background:#eff8fb;border-left:4px solid #0d9eaa;padding:13px 17px;border-radius:10px;color:#21465b;margin:12px 0}.warningbox{background:#fff6e8;border-left:4px solid #e59a31;padding:13px 17px;border-radius:10px;color:#70542b;margin:12px 0}@media(max-width:850px){.block-container{padding:1rem .8rem 3rem!important}.hero{padding:21px}.hero h1{font-size:1.45rem!important}}
+    </style>""",unsafe_allow_html=True)
+    logo = b64encode((ROOT / 'assets' / 'logo_uff.png').read_bytes()).decode('ascii')
+    st.markdown(f'<div class="hero"><img src="data:image/png;base64,{logo}" width="72" alt="Universidade Federal Fluminense">'
+                '<div><h1>UHE Três Marias</h1><p>Painel hidroclimático do Rio São Francisco</p></div></div>',
+                unsafe_allow_html=True)
 
 
 
@@ -329,7 +329,8 @@ FIGURES = {
 
 def paper_figure(index):
     title, source = FIGURES[index]
-    st.markdown(f'**Figura {index} do TCC · {title}**')
+    figure_number = index + 2 if index >= 13 else index
+    st.markdown(f'**Figura {figure_number} do TCC · {title}**')
     with st.container(border=True):
         st.image(str(ROOT / 'assets' / 'figuras_pdf' / f'{index:02}.png'), width='stretch')
         st.caption(source)
@@ -341,7 +342,7 @@ def export(data, label, filename, index=False):
 
 @st.cache_data
 def bundled_ons(kind):
-    return ons.read(kind, directory=ROOT / 'dados_ons' / 'sem_atualizacoes')
+    return ons.read(kind, directory=ons.SNAPSHOT)
 
 
 def cover():
@@ -395,10 +396,11 @@ def open_science_topic(topic):
     st.session_state['science_topic'] = topic
 
 
-def science(frame, sar):
+def science(frame, sar, defense=True):
     st.header('Dos postos ao histórico hidroclimático')
     structure = SCIENCE_TOPICS
-    topic = st.radio('Etapas da página 02', structure, horizontal=True, key='science_topic')
+    topic = st.radio('Etapas da página 02' if defense else 'Temas do histórico',
+                     structure, horizontal=True, key='science_topic')
     if topic == structure[0]:
         st.write('As séries foram selecionadas pela posição, pela variável medida, pela cobertura e '
                  'pela sobreposição temporal. Barramento e Porto Mesquita contextualizam a chuva histórica. '
@@ -434,7 +436,19 @@ def science(frame, sar):
             table(runs.assign(Início=runs.Início.map(month), Fim=runs.Fim.map(month)).round(2))
         else:
             st.info('Nenhuma sequência abaixo desse patamar.')
-        with st.expander('Consultar a sazonalidade mensal do SAR'):
+        with st.expander('Explorar a curva de permanência e a sazonalidade'):
+            curve = hydro.permanence(series)
+            chart = go.Figure(go.Scatter(x=curve.excedencia, y=curve.vazao, mode='lines+markers', name='SAR'))
+            for exceedance in (90, 95):
+                quantile = hydro.reference_quantile(curve, exceedance)
+                if pd.notna(quantile):
+                    chart.add_vline(x=exceedance, line_dash='dot')
+                    chart.add_scatter(x=[exceedance], y=[quantile], mode='markers',
+                                      name=f'Q{exceedance} = {number(quantile, 2)} m³/s')
+            chart.update_layout(title='Permanência da vazão natural mensal',
+                                xaxis_title='Frequência de excedência (%)', yaxis_title='Vazão (m³/s)')
+            figure(chart, 'sar_permanence', 'ANA/SAR, meses completos. Posição de Weibull e interpolação linear, seções 5.6 e 6.1.')
+            export(curve, 'Baixar curva de permanência', 'permanencia_sar.csv')
             seasonality(sar, FLOW[0], 'sar_season')
             export(sar[[FLOW[0]]].dropna(), 'Baixar vazão natural mensal', 'sar_vazao_natural.csv', index=True)
     elif topic == structure[2]:
@@ -445,9 +459,23 @@ def science(frame, sar):
         st.write('A maior associação entre as defasagens testadas ocorreu a dois meses '
                  '(r = 0,566, com 76 pares). A leitura se aplica à janela e ao posto analisados.')
         with st.expander('Consultar as defasagens e o contexto climático'):
-            result = associations(frame, ['chuva_andrequice_mm'], FLOW[0], lags=range(4))
+            st.caption('Sensibilidade por retirada de um ano hidrológico (novembro a outubro), classificado pelo mês da variável-resposta. A faixa mostra variação amostral e a correlação expressa associação, seção 5.6.')
+            mode = st.radio('Séries para a correlação', ('Anomalias mensais', 'Valores originais'),
+                            horizontal=True, key='correlation_mode')
+            anomalies = mode == 'Anomalias mensais'
+            result = associations(frame, ['chuva_andrequice_mm'], FLOW[0],
+                                  anomalies=anomalies, lags=range(4))
             table(result.round(3))
             export(result, 'Baixar resultados por defasagem', 'andrequice_defasagens.csv')
+            climate, _ = climate_series()
+            targets = {'Chuva no Barramento': 'chuva_barramento_mm', 'Vazão natural SAR': FLOW[0]}
+            target = targets[st.selectbox('Variável-resposta dos índices climáticos', targets)]
+            lag = st.selectbox('Defasagem dos índices (meses)', range(4))
+            climate_pairs = frame[[target]].join(climate, how='outer')
+            climate_result = associations(climate_pairs, CLIMATE, target, anomalies=anomalies, lags=[lag])
+            st.caption('Os recortes usam os mesmos meses válidos em cada comparação (ANA/HidroWeb, SAR e acervo climático, seções 5.6 e 6.2).')
+            table(climate_result.round(3))
+            export(climate_result, 'Baixar associações climáticas', 'associacoes_climaticas.csv')
             figure(climate_map('ZCAS'), 'climate_map',
                    'Recortes esquemáticos conforme Cataldi et al. (2025), seção 4.4.')
             oni = oni_series()
@@ -455,12 +483,19 @@ def science(frame, sar):
             chart.update_layout(title='Índice Oceânico Niño', yaxis_title='Anomalia (°C)', xaxis_title='Mês central')
             figure(chart, 'oni', 'NOAA/CPC · cópia local. Informação de contexto climático.')
     else:
+        st.caption('Experimento acadêmico desenvolvido pela autora, seção 5.7. As previsões oficiais do ONS têm fonte e protocolo próprios.')
         st.write('A climatologia apresentou o menor erro médio global em M+1 e M+2. '
                  'Nos quatro meses abaixo de 150 m³/s, a persistência teve o menor erro em M+1.')
         paper_figure(15)
         st.write('M+1 estima o primeiro mês após a origem. Em M+2, a estimativa tem dois meses de antecedência.')
         paper_figure(16)
-        forecasts = ROOT / 'historico_desenvolvimento' / 'resultados_entrega'
+        with st.expander('Método e limites da previsão'):
+            st.write('A persistência repete a vazão na origem. A climatologia usa a média histórica do mês-alvo. '
+                     'O Ridge usa vazões na origem e 1, 2, 3, 6 e 12 meses antes, além de seno e cosseno do mês-alvo. '
+                     'O treino expansivo considera alvos anteriores à origem e padroniza os atributos a cada rodada.')
+            st.write('São 21 meses-alvo por horizonte na auditoria e quatro casos abaixo de 150 m³/s. A checagem '
+                     'de outubro de 2026 usa uma referência ONS separada do backtest SAR.')
+        forecasts = ROOT / 'previsao_mensal' / 'resultados_entrega'
         metrics = pd.read_csv(forecasts / 'metricas.csv').query("etapa == 'Auditoria' and horizonte in (1, 2)")
         metrics = metrics.pivot(index=['horizonte', 'recorte', 'n'], columns='modelo', values='MAE')
         metrics = metrics.reset_index().rename(columns={'horizonte': 'Horizonte', 'recorte': 'Recorte', 'n': 'Meses'})
@@ -534,10 +569,10 @@ def scenarios():
     st.write('O diagnóstico sinaliza dias com média diária igual ou superior a 300 m³/s '
              'e ao menos uma hora abaixo desse valor entre 6 h e 18 h. '
              'Cada dia elegível tem média oficial e os 12 registros da janela.')
+    st.caption('A contagem descreve diferenças entre escalas temporais. A avaliação de conformidade depende da regra aplicável e de evidências consistidas no ponto de controle, conforme as seções 5.8 e 6.5.')
     daily, hourly = bundled_ons('diario'), bundled_ons('horario')
     months = ('2025-10', '2026-10')
     readings = {key: diagnosis_for_month(key, THRESHOLD, hourly, daily) for key in months}
-    paper_figure(19)
     st.markdown('**Tabela 3 do TCC · Comparação do diagnóstico**')
     indicators = {}
     for key, (_, summary) in readings.items():
@@ -545,18 +580,23 @@ def scenarios():
         flagged = int(summary.diverge.sum())
         indicators[month(pd.Period(key).start_time)] = [
             eligible, int(summary.horas_abaixo.gt(0).sum()), int(summary.horas_abaixo.sum()),
-            flagged, round(100 * flagged / eligible, 1),
+            flagged, round(100 * flagged / eligible, 1) if eligible else np.nan,
         ]
     indicators = pd.DataFrame(indicators, index=['Dias elegíveis', 'Dias com pelo menos uma hora abaixo',
         'Horas abaixo nos dias elegíveis', 'Dias com divergência entre escalas', 'Percentual sinalizado (%)'])
     table(indicators.rename_axis('Indicador').reset_index())
+    paper_figure(19)
     paper_figure(11)
     st.write('Em 22/10/2026, a média diária foi de 450 m³/s. Houve cinco horas diurnas consecutivas '
              'abaixo de 300 m³/s, com mínimo de 164 m³/s entre 13 h e 14 h.')
     key = st.selectbox('Mês do diagnóstico', months, index=1, format_func=lambda x: month(pd.Period(x).start_time))
     intervals, summary = readings[key]
     days = summary.index[summary.elegivel]
-    default = pd.Timestamp('2026-10-22') if key == '2026-10' else days[0]
+    if days.empty:
+        st.info('Nenhum dia com cobertura completa neste mês.')
+        return
+    example = pd.Timestamp('2026-10-22')
+    default = example if key == '2026-10' and example in days else days[0]
     day = st.selectbox('Dia elegível para detalhar', list(days), index=days.get_loc(default),
                        format_func=lambda d: d.strftime('%d/%m/%Y'), key=f'day_{key}')
     hourly_view(hourly, day, summary.loc[day, 'media_diaria'])
@@ -575,14 +615,12 @@ def synthesis():
         ('ANA/HidroWeb', 'Estação 41020002 e referência de Pirapora Barreiro', '6.5'),
     ], columns=['Fonte', 'Uso no painel', 'Seções do TCC']))
     with st.expander('Inventário ANA e cobertura das séries'):
-        for path in (DATA / '01_decisao_45_estacoes.csv', ROOT / 'docs' / 'inventario_series.csv'):
+        for path in (DATA / '01_decisao_45_estacoes.csv', DATA / 'inventario_series.csv'):
             records = pd.read_csv(path, sep=';', dtype={'codigo': str})
             table(records)
             st.download_button(f'Baixar {path.name}', path.read_bytes(), path.name, 'text/csv')
     with st.expander('Vazão diária em Pirapora Barreiro'):
         show_pirapora()
-    path = ROOT / 'docs' / 'CORRESPONDENCIA_TCC.md'
-    st.download_button('Baixar correspondência com o TCC', path.read_bytes(), path.name, 'text/markdown')
 
 
 def conclusion():
@@ -597,25 +635,33 @@ def conclusion():
         ('Operação diária', 'Em outubro de 2026 o volume útil diminuiu de 77,10% para 69,74%.'),
         ('Diagnóstico horário', 'Divergência entre escalas em 29 de 30 dias elegíveis em outubro de 2025 e 8 de 31 em outubro de 2026.'),
     ], columns=['Etapa', 'Resultado']))
+    st.write('A contribuição da plataforma é reunir séries e métodos rastreáveis. O experimento de previsão tem 21 meses-alvo por horizonte e apenas quatro meses de baixa vazão. A avaliação a jusante requer série horária consistida e uma estimativa de tempo de viagem.')
     st.info('As datas e horas da descarga registrada na usina orientam o acompanhamento no trecho a jusante. '
             'A estação 41020002 identifica o ponto de controle discutido no TCC.')
 
 
-page = setup()
-if page == PAGES[0]:
-    cover()
-elif page == PAGES[1]:
-    context()
-elif page == PAGES[2]:
-    frame, sar = load_history()
-    science(frame, sar)
-elif page == PAGES[3]:
-    operations()
-elif page == PAGES[4]:
-    scenarios()
-elif page == PAGES[5]:
-    synthesis()
-else:
-    conclusion()
-defense_navigation(page)
-st.caption('Marianna Brandão Ferreira · Universidade Federal Fluminense')
+
+def main():
+    configure_page('Três Marias | Defesa do TCC')
+    page = setup()
+    if page == PAGES[0]:
+        cover()
+    elif page == PAGES[1]:
+        context()
+    elif page == PAGES[2]:
+        frame, sar = load_history()
+        science(frame, sar)
+    elif page == PAGES[3]:
+        operations()
+    elif page == PAGES[4]:
+        scenarios()
+    elif page == PAGES[5]:
+        synthesis()
+    else:
+        conclusion()
+    defense_navigation(page)
+    st.caption('Marianna Brandão Ferreira · Universidade Federal Fluminense')
+
+
+if __name__ == '__main__':
+    main()

@@ -175,7 +175,7 @@ def october_projection_verification(path, figure, table):
 
 def ridge_audit(figure, table):
     with st.expander('Previsão mensal experimental · Ridge, persistência e climatologia'):
-        path = ROOT / 'historico_desenvolvimento' / 'resultados_entrega'
+        path = ROOT / 'previsao_mensal' / 'resultados_entrega'
         raw = pd.read_csv(path / 'backtest.csv', parse_dates=['alvo'])
         audit = raw.loc[raw.etapa.eq('Auditoria') & raw.horizonte.isin((1, 2))].copy()
         h = st.radio('Horizonte da auditoria', [1, 2], format_func=lambda n: f'M+{n}', horizontal=True)

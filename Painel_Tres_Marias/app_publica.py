@@ -1,7 +1,7 @@
 """Interface de consulta hidroclimática da UHE Três Marias."""
 import streamlit as st
 
-from app import configure_page, context, load_history, operations, scenarios, science, synthesis
+from painel import configure_page, context, load_history, operations, scenarios, science, synthesis
 
 
 def overview():

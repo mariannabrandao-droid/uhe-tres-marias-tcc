@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 
-from figuras_tcc import OCT_MAR
+from series_historicas import OCT_MAR
 from hidroclima import DAILY, DRY, FLOW, ROOT, coverage
 
 INPUTS = DAILY.parent

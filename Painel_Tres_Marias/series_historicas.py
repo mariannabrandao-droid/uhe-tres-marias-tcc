@@ -1,4 +1,4 @@
-"""Séries e figuras vinculadas à numeração do Word comentado."""
+"""Leitura e agregação das séries históricas de vazão e clima."""
 import pandas as pd
 
 from hidroclima import ROOT

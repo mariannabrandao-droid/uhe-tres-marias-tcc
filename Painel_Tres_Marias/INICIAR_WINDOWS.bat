@@ -11,7 +11,7 @@ if errorlevel 1 goto erro
 :instalar
 ".venv\Scripts\python.exe" -m pip install -r requirements.txt
 if errorlevel 1 goto erro
-".venv\Scripts\python.exe" -m streamlit run app.py
+".venv\Scripts\python.exe" -m streamlit run app_publica.py
 if errorlevel 1 goto erro
 exit /b 0
 :erro

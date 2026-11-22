@@ -1,0 +1,10 @@
+__pycache__/
+.venv/
+.streamlit/secrets.toml
+/Painel_Tres_Marias/.cache_ons/
+/Painel_Tres_Marias/.dados_instalados
+/Painel_Tres_Marias/ANA_Etapa02/
+/Painel_Tres_Marias/assets/
+/Painel_Tres_Marias/dados_ana/
+/Painel_Tres_Marias/dados_ons/
+/Painel_Tres_Marias/previsao_mensal/

@@ -18,6 +18,10 @@ def main():
     next(b for b in at.button if b.label == 'Iniciar apresentação').click().run()
     check((2, 3, 10))
     pages = at.sidebar.radio[0].options
+    next(b for b in at.button if b.label == f'Voltar · {pages[0][5:]}').click().run()
+    check()
+    next(b for b in at.button if b.label == 'Iniciar apresentação').click().run()
+    check((2, 3, 10))
     next(b for b in at.button if b.label == f'Avançar · {pages[2][5:]}').click().run()
     check((12,))
     topics = at.radio(key='science_topic').options
@@ -25,6 +29,13 @@ def main():
         next(b for b in at.button if b.label == f'Avançar · {topic}').click().run()
         assert at.radio(key='science_topic').value == topic
         check(figures)
+        if topic == 'Clima e associações':
+            at.radio(key='correlation_mode').set_value('Valores originais').run()
+            next(box for box in at.selectbox if box.label == 'Variável-resposta dos índices climáticos').select('Vazão natural SAR').run()
+            next(box for box in at.selectbox if box.label == 'Defasagem dos índices (meses)').select(2).run()
+            check(figures)
+            result = next(item.value for item in at.dataframe if 'Sensibilidade mín.' in item.value and len(item.value) == 10)
+            assert result.Defasagem.eq(2).all()
     assert at.dataframe[0].value.shape == (6, 6), at.dataframe[0].value
 
     next(b for b in at.button if b.label == f'Avançar · {pages[3][5:]}').click().run()

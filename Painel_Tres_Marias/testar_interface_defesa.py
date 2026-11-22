@@ -21,26 +21,26 @@ def main():
     next(b for b in at.button if b.label == f'Avançar · {pages[2][5:]}').click().run()
     check((12,))
     topics = at.radio(key='science_topic').options
-    for topic, figures in zip(topics[1:], ((1, 4, 9, 13), (5, 6, 7, 8, 14), (15, 16, 17))):
+    for topic, figures in zip(topics[1:], ((1, 4, 9, 15), (5, 6, 7, 8, 16), (17, 18, 19))):
         next(b for b in at.button if b.label == f'Avançar · {topic}').click().run()
         assert at.radio(key='science_topic').value == topic
         check(figures)
     assert at.dataframe[0].value.shape == (6, 6), at.dataframe[0].value
 
     next(b for b in at.button if b.label == f'Avançar · {pages[3][5:]}').click().run()
-    check((18,))
+    check((20,))
     assert {'186,76 m³/s', '-5,24 m³/s'} <= {metric.value for metric in at.metric}
     with patch('informes_ana.fetch_bulletins', side_effect=OSError('Falha simulada')):
         next(b for b in at.button if b.label == 'Buscar boletins recentes da ANA').click().run()
-    check((18,))
+    check((20,))
     assert any('última lista disponível' in warning.value for warning in at.warning)
 
     at.sidebar.radio[0].set_value(pages[4]).run()
-    check((11, 19))
+    check((11, 21))
     comparison = at.dataframe[0].value
     assert comparison.iloc[3, 1:].tolist() == [29, 8]
     at.selectbox[0].select('2025-10').run()
-    check((11, 19))
+    check((11, 21))
 
     for page in pages[5:]:
         at.sidebar.radio[0].set_value(page).run()

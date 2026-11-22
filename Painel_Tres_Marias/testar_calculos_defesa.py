@@ -5,7 +5,7 @@ import pandas as pd
 
 from analise_defesa import CLIMATE, associations, climate_series, historical_evidence, low_runs
 from defluencia_diurna import analyze, read_october
-from hidroclima import DAILY, DATA, FLOW, complete_sar, read_series
+from hidroclima import DAILY, DATA, FLOW, complete_sar, permanence, read_series, reference_quantile
 
 
 def monthly_manually(series, operation):
@@ -33,6 +33,9 @@ def main():
     assert (len(monthly), int(monthly.lt(150).sum()), evidence['longest']) == (81, 16, 5)
     assert isclose(evidence['min_median'], 128.167)
     assert isclose(evidence['max_median'], 1350.535357142857)
+    curve = permanence(monthly)
+    assert round(reference_quantile(curve, 90), 2) == 100.87
+    assert round(reference_quantile(curve, 95), 2) == 69.19
     print('SAR diário → mês completo: 16/81 abaixo de 150 m³/s, sequência máxima 5 meses.')
     assert list(low_runs(pd.Series([149., 150., None, 149., 149.],
                                     index=pd.date_range('2000-01', periods=5, freq='MS')), 150).Meses) == [2, 1]
@@ -45,6 +48,25 @@ def main():
     panel = associations(read_series(), ['chuva_andrequice_mm'], FLOW[0], lags=[2]).iloc[0]
     assert len(pairs) == panel.n == 76 and isclose(coefficient, panel.r)
     print(f'ANA Andrequicé diária → total mensal × SAR natural em t+2: n={len(pairs)}, Pearson r={coefficient:.6f}.')
+
+    # Outubro passa a novembro em t+1. O mês-alvo define a retirada.
+    index = pd.date_range('2019-09-01', '2022-12-01', freq='MS')
+    small = pd.DataFrame({'x': [i % 9 for i in range(len(index))],
+                          'q': [(i * i) % 13 for i in range(len(index))]}, index=index)
+    for lag in (0, 1, 2, 3):
+        manual = [(date, date + pd.DateOffset(months=lag)) for date in index[:-lag or None]]
+        years = [target.year + int(target.month >= 11) for _, target in manual]
+        trials = []
+        for year in sorted(set(years)):
+            kept = [pair for pair, water_year in zip(manual, years) if water_year != year]
+            x_dates, y_dates = zip(*kept)
+            x = small.loc[list(x_dates), 'x'].reset_index(drop=True)
+            y = small.loc[list(y_dates), 'q'].reset_index(drop=True)
+            trials.append(pearson_independent(x, y))
+        row = associations(small, ['x'], 'q', anomalies=False, lags=[lag]).iloc[0]
+        assert isclose(row['Sensibilidade mín.'], min(trials))
+        assert isclose(row['Sensibilidade máx.'], max(trials))
+        assert row['Anos hidrológicos'] == len(set(years))
 
     frame = read_series()
     climate, counts = climate_series()

@@ -342,7 +342,7 @@ def export(data, label, filename, index=False):
 
 @st.cache_data
 def bundled_ons(kind):
-    return ons.read(kind, directory=ROOT / 'dados_ons' / 'sem_atualizacoes')
+    return ons.read(kind, directory=ons.SNAPSHOT)
 
 
 def cover():
@@ -495,7 +495,7 @@ def science(frame, sar, defense=True):
                      'O treino expansivo considera alvos anteriores à origem e padroniza os atributos a cada rodada.')
             st.write('São 21 meses-alvo por horizonte na auditoria e quatro casos abaixo de 150 m³/s. A checagem '
                      'de outubro de 2026 usa uma referência ONS separada do backtest SAR.')
-        forecasts = ROOT / 'historico_desenvolvimento' / 'resultados_entrega'
+        forecasts = ROOT / 'previsao_mensal' / 'resultados_entrega'
         metrics = pd.read_csv(forecasts / 'metricas.csv').query("etapa == 'Auditoria' and horizonte in (1, 2)")
         metrics = metrics.pivot(index=['horizonte', 'recorte', 'n'], columns='modelo', values='MAE')
         metrics = metrics.reset_index().rename(columns={'horizonte': 'Horizonte', 'recorte': 'Recorte', 'n': 'Meses'})
@@ -615,14 +615,12 @@ def synthesis():
         ('ANA/HidroWeb', 'Estação 41020002 e referência de Pirapora Barreiro', '6.5'),
     ], columns=['Fonte', 'Uso no painel', 'Seções do TCC']))
     with st.expander('Inventário ANA e cobertura das séries'):
-        for path in (DATA / '01_decisao_45_estacoes.csv', ROOT / 'docs' / 'inventario_series.csv'):
+        for path in (DATA / '01_decisao_45_estacoes.csv', DATA / 'inventario_series.csv'):
             records = pd.read_csv(path, sep=';', dtype={'codigo': str})
             table(records)
             st.download_button(f'Baixar {path.name}', path.read_bytes(), path.name, 'text/csv')
     with st.expander('Vazão diária em Pirapora Barreiro'):
         show_pirapora()
-    path = ROOT / 'revisao' / 'CORRESPONDENCIA_TCC.md'
-    st.download_button('Baixar correspondência com o TCC', path.read_bytes(), path.name, 'text/markdown')
 
 
 def conclusion():

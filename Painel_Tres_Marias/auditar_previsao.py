@@ -9,7 +9,7 @@ import pandas as pd
 from preparar_dados import preparar_dados
 
 ROOT = Path(__file__).resolve().parent
-HISTORY = ROOT / 'historico_desenvolvimento'
+HISTORY = ROOT / 'previsao_mensal'
 
 
 def main():

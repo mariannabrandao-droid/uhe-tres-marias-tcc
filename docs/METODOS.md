@@ -27,6 +27,9 @@ python testar_operacao.py
 python auditar_previsao.py --saida ../previsao-reexecutada
 python testar_interface_defesa.py
 python testar_interface_publica.py
+python testar_consulta_ana.py
 ```
 
 `auditar_previsao.py` confere os resultados com o acervo entregue. `auditar_ons.py` aceita os caminhos locais dos CSVs originais do ONS para verificar o recorte de outubro de 2026. Os caminhos e fontes estão descritos no manual dentro de `dados_ons/` após a extração.
+
+A consulta a outras regiões usa o catálogo público do SNIRH e séries diárias da ANA. [Cobertura, consistência e fontes](CONSULTA_ANA.md)

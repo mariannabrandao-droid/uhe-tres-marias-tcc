@@ -1,6 +1,7 @@
 """Interface de consulta hidroclimática da UHE Três Marias."""
 import streamlit as st
 
+from explorar_ana import explorer
 from painel import configure_page, context, load_history, operations, scenarios, science, synthesis
 
 
@@ -12,11 +13,20 @@ def overview():
     )
     st.markdown(
         '- **Histórico hidroclimático** reúne postos, sazonalidade, baixas vazões, '
-        'associações climáticas e previsão experimental.\n'
+        'associações climáticas e previsão experimental. Você também pode pesquisar estações da ANA de outras bacias.\n'
         '- **Operação diária** mostra entradas, saídas e volume útil do reservatório.\n'
         '- **Defluência por dia e hora** permite investigar os intervalos diurnos.\n'
         '- **Dados e reprodução** reúne fontes, métodos e downloads.'
     )
+
+
+def history():
+    source = st.radio('Área de consulta', ('Três Marias · exemplo', 'Outra localização · ANA'),
+                      horizontal=True, key='public_history_source')
+    if source == 'Três Marias · exemplo':
+        science(*load_history(), defense=False)
+    else:
+        explorer()
 
 
 def glossary():
@@ -54,7 +64,7 @@ def main():
     pages = {
         'Visão geral': overview,
         'Usina e contexto': context,
-        'Histórico hidroclimático': lambda: science(*load_history(), defense=False),
+        'Histórico hidroclimático': history,
         'Operação diária': operations,
         'Defluência por dia e hora': scenarios,
         'Dados e reprodução': reproducibility,

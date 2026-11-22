@@ -2,6 +2,8 @@
 
 Consulte disponibilidade hídrica mensal, associações chuva–vazão, previsões retrospectivas e registros de operação. O exemplo integra dados ANA, ONS e acervo climático para localizar episódios de baixa liberação e recuperar os registros usados na análise.
 
+Na consulta livre, abra **Histórico hidroclimático → Outra localização · ANA** para pesquisar estações de chuva ou vazão e baixar séries de outras bacias. [Como pesquisar estações e séries](docs/CONSULTA_ANA.md)
+
 [Abrir painel publicado](https://uhe-tres-marias-tcc-otuk87syyzpg5dh82bdq6f.streamlit.app/)
 
 ## Começar

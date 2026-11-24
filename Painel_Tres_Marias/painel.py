@@ -57,7 +57,7 @@ def configure_page(title):
     .sectionintro{color:#6b7d90;font-size:.92rem;margin-top:-.65rem;margin-bottom:1.2rem}
     .pill{display:inline-block;background:#e1f4f4;border:1px solid #b8e4e4;color:#176d76;border-radius:20px;font-size:.74rem;padding:4px 11px;margin:0 5px 7px 0;font-weight:700}
     .footerline{margin-top:25px;padding-top:16px;border-top:1px solid #d9e5ed;color:#788a9a;font-size:.78rem}
-    .stApp [data-testid='stSidebar'] [role='radiogroup'] label{transition:background .2s ease}.stApp [data-testid='stSidebar'] [role='radiogroup'] label:hover{background:#19445d!important}.stApp [data-testid='stHorizontalBlock']{align-items:stretch}.stApp [data-testid='stMetric']{height:100%}.stApp [data-testid='stDataFrame']{font-size:.86rem}.stApp .stTabs [data-baseweb='tab']{font-weight:700}.insight{background:#eff8fb;border-left:4px solid #0d9eaa;padding:13px 17px;border-radius:10px;color:#21465b;margin:12px 0}.warningbox{background:#fff6e8;border-left:4px solid #e59a31;padding:13px 17px;border-radius:10px;color:#70542b;margin:12px 0}@media(max-width:850px){.block-container{padding:1rem .8rem 3rem!important}.hero{padding:21px}.hero h1{font-size:1.45rem!important}}
+    .stApp [data-testid='stSidebar'] [role='radiogroup'] label{transition:background .2s ease}.stApp [data-testid='stSidebar'] [role='radiogroup'] label:hover{background:#19445d!important}.stApp [data-testid='stHorizontalBlock']{align-items:stretch}.stApp [data-testid='stMetric']{height:100%}.stApp [data-testid='stDataFrame']{font-size:.86rem}.stApp .stTabs [data-baseweb='tab']{font-weight:700}.insight{background:#eff8fb;border-left:4px solid #0d9eaa;padding:13px 17px;border-radius:10px;color:#21465b;margin:12px 0}.focuscard{background:#fff;border:1px solid var(--line);border-top:3px solid #0b9a9c;border-radius:14px;padding:18px;min-height:120px;color:#315169}.focuscard b{color:#123450;font-size:1rem}.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:10px 0 24px}.tl-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;position:relative;min-height:150px}.tl-item:before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#0b9a9c,#1161a8);border-radius:14px 14px 0 0}.tl-year{display:block;font-weight:800;color:#0b9298;font-size:.78rem;letter-spacing:.08em;margin-bottom:8px}.tl-item b{display:block;color:#123450;margin-bottom:6px}.tl-item small{display:block;color:#60758b;line-height:1.35}.warningbox{background:#fff6e8;border-left:4px solid #e59a31;padding:13px 17px;border-radius:10px;color:#70542b;margin:12px 0}@media(max-width:850px){.block-container{padding:1rem .8rem 3rem!important}.hero{padding:21px}.hero h1{font-size:1.45rem!important}.timeline{grid-template-columns:1fr}.tl-item{min-height:auto}}
     </style>""",unsafe_allow_html=True)
     logo = b64encode((ROOT / 'assets' / 'logo_uff.png').read_bytes()).decode('ascii')
     st.markdown(f'<div class="hero"><img src="data:image/png;base64,{logo}" width="72" alt="Universidade Federal Fluminense">'
@@ -335,25 +335,50 @@ def cover():
 
 
 def context():
-    st.header('Contexto do estudo e discussão sobre vazão mínima')
-    st.subheader('O pedido divulgado pelo Ministério Público Federal')
-    st.write('Em fevereiro de 2026, o MPF divulgou pedido de 300 m³/s constantes entre 6 h e 18 h. '
-             'O TCC usa esse patamar como cenário analítico para localizar intervalos de baixa liberação na usina.')
-    st.write('A Resolução ANA nº 2.081/2017 descreve condições de operação do sistema e identifica '
-             'a estação 41020002 como ponto de controle. O estudo distingue os registros da usina '
-             'da vazão medida no rio a jusante.')
-    st.markdown(f'[Comunicado do MPF]({MPF_ACAO}) · [Resolução ANA nº 2.081/2017]({ANA_REGRA})')
-    st.subheader('Por que o reservatório foi construído')
-    st.write('Implantada na década de 1960, a UHE Três Marias reuniu objetivos de geração de energia, '
-             'controle de cheias e desenvolvimento regional. O TCC situa a construção da barragem '
-             'no planejamento da região e nas transformações vividas pelas populações ribeirinhas.')
+    st.header('Usina, operação e vazão mínima')
+    st.markdown(
+        '<div class="sectionintro">Esta página apresenta o problema antes dos indicadores: onde Três Marias se insere, '
+        'como o reservatório regula e libera água e por que a escala temporal importa na discussão sobre vazão mínima.</div>',
+        unsafe_allow_html=True,
+    )
 
-    st.subheader('A UHE Três Marias no Alto São Francisco')
-    st.write('O reservatório participa da geração de energia, da regularização das vazões, do controle de cheias '
-             'e do atendimento aos usos múltiplos da água. Sua posição a montante ajuda a situar as liberações '
-             'no conjunto de reservatórios do São Francisco.')
+    st.markdown('### Da implantação da usina ao problema analisado')
+    st.markdown(
+        """
+        <div class="timeline">
+          <div class="tl-item"><span class="tl-year">1962</span><b>Entrada em operação</b><small>Três Marias passa a exercer funções de geração, regularização e controle de cheias no Alto São Francisco.</small></div>
+          <div class="tl-item"><span class="tl-year">2017</span><b>Regra operativa da ANA</b><small>A Resolução ANA nº 2.081/2017 consolida condições de operação e identifica a estação 41020002 como referência de controle a jusante.</small></div>
+          <div class="tl-item"><span class="tl-year">2025</span><b>Condição hidrológica e previsão</b><small>Documentos do ONS permitem confrontar previsões divulgadas com registros posteriores e contextualizar a operação do reservatório.</small></div>
+          <div class="tl-item"><span class="tl-year">2026</span><b>Discussão sobre 300 m³/s</b><small>O MPF divulga pedido de 300 m³/s constantes entre 6 h e 18 h, adotado no TCC como cenário analítico de comparação horária.</small></div>
+          <div class="tl-item"><span class="tl-year">TCC</span><b>Pergunta operacional</b><small>Uma média diária pode ocultar horas de menor liberação? O painel integra escalas e fontes para localizar e conferir esses episódios.</small></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('### O problema em uma frase')
+    st.info(
+        'Três Marias precisa ser interpretada em múltiplas escalas: a disponibilidade hídrica é caracterizada no histórico mensal; '
+        'a operação é acompanhada diariamente; e a liberação pode variar dentro do próprio dia. O painel conecta essas leituras '
+        'sem tratar vazão natural, afluência, defluência e vazão medida a jusante como se fossem a mesma variável.'
+    )
+
     context_figures(figure)
-    figure(local_map(), 'control_map', 'ANA/SNIRH e HidroWeb. O mapa distingue a descarga da usina e a estação 41020002.')
+
+    st.markdown('### Por que isso justifica a plataforma')
+    c1, c2, c3 = st.columns(3)
+    c1.markdown('<div class="focuscard"><b>Disponibilidade</b><br><span>Quanto de água o sistema recebe e como o histórico se distribui ao longo dos meses.</span></div>', unsafe_allow_html=True)
+    c2.markdown('<div class="focuscard"><b>Operação</b><br><span>Como afluência, armazenamento, turbinamento, vertimento e defluência evoluem no tempo.</span></div>', unsafe_allow_html=True)
+    c3.markdown('<div class="focuscard"><b>Escala temporal</b><br><span>Como médias mensais ou diárias podem suavizar variações importantes em janelas menores.</span></div>', unsafe_allow_html=True)
+
+    st.markdown('### Objetivo aplicado nesta usina')
+    st.write(
+        'A plataforma não define uma nova vazão mínima operativa. Ela organiza evidências para que o usuário possa partir do histórico, '
+        'identificar períodos de menor disponibilidade, acompanhar a operação e, quando necessário, descer da média diária para os registros '
+        'horários. Esse percurso traduz o objetivo geral e a justificativa do TCC para uma sequência visual de análise.'
+    )
+    st.markdown(f'[Comunicado do MPF]({MPF_ACAO}) · [Resolução ANA nº 2.081/2017]({ANA_REGRA})')
+
 
 def open_science_topic(topic):
     st.session_state['science_topic'] = topic

@@ -60,18 +60,9 @@ def reproducibility():
 
 
 def main():
-    configure_page('Três Marias | Consulta pública')
-    pages = {
-        'Visão geral': overview,
-        'Usina e contexto': context,
-        'Histórico hidroclimático': history,
-        'Operação diária': operations,
-        'Defluência por dia e hora': scenarios,
-        'Dados e reprodução': reproducibility,
-        'Glossário': glossary,
-    }
-    selected = st.sidebar.radio('Páginas', tuple(pages), key='public_page')
-    pages[selected]()
+    configure_page('Consulta hidroclimática | ANA')
+    st.header('Consulta hidroclimática por estação')
+    explorer()
     st.caption('Marianna Brandão Ferreira · Universidade Federal Fluminense')
 
 

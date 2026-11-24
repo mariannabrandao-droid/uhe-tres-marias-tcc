@@ -10,7 +10,7 @@ import streamlit as st
 from consulta_ana import HIDROWEB, VARIABLES, hydrographic_regions, read_series, search_stations, series_url
 
 DEFAULT_POINT = (-18.20, -45.26)
-SOURCE_ERRORS = (URLError, OSError, ValueError, ParseError)
+SOURCE_ERRORS = (URLError, OSError, ValueError, ParseError, RecursionError)
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -74,7 +74,8 @@ def show_series(series, code, variable, start, end, level):
     st.caption(f'ANA/HidroWeb · Nível {level}. Lacunas são dias sem valor. O CSV preserva o código de status da ANA.')
     download(series, 'Baixar série diária (CSV)', f'ana_{code}_nivel_{level}_diario.csv')
     st.link_button('Abrir XML original da ANA', series_url(code, variable, start, end, level))
-    with st.expander('Resumo mensal e cobertura'):
+    with st.container(border=True):
+        st.subheader('Diagnóstico mensal e sazonal')
         grouped = indexed.resample('MS')
         monthly = grouped.sum(min_count=1) if variable == 'Chuva' else grouped.mean()
         counts = grouped.count()
@@ -85,6 +86,25 @@ def show_series(series, code, variable, start, end, level):
             'unidade': 'mm/mês' if variable == 'Chuva' else unit,
         })
         st.caption('O total de chuva ou a média de vazão só é calculado para meses completos.')
+        monthly_valid = monthly.where(complete)
+        left, right = st.columns(2)
+        with left:
+            fig = go.Figure(go.Scatter(x=monthly_valid.index, y=monthly_valid, mode='lines+markers', connectgaps=False, line=dict(color='#0d1d96')))
+            fig.update_layout(title='Série mensal completa', yaxis_title=summary.unidade.iloc[0])
+            st.plotly_chart(fig, width='stretch')
+        with right:
+            fig = go.Figure()
+            for m in range(1, 13):
+                fig.add_box(y=monthly_valid[monthly_valid.index.month == m].dropna(), name=str(m), marker_color='#0d6aff')
+            fig.update_layout(title='Distribuição sazonal mensal', showlegend=False, xaxis_title='Mês', yaxis_title=summary.unidade.iloc[0])
+            st.plotly_chart(fig, width='stretch')
+        if variable == 'Vazão' and valid:
+            values = indexed.dropna().sort_values(ascending=False).to_numpy()
+            p = 100 * (pd.RangeIndex(1, len(values)+1).to_numpy()) / (len(values)+1)
+            fig = go.Figure(go.Scatter(x=p, y=values, line=dict(color='#0d1d96')))
+            fig.update_layout(title='Curva de permanência diária', xaxis_title='Frequência de excedência (%)', yaxis_title=unit)
+            st.plotly_chart(fig, width='stretch')
+            st.caption('Posição de Weibull; apenas dias válidos no período selecionado. Não equivale à curva mensal do estudo de Três Marias.')
         st.dataframe(summary, hide_index=True)
         download(summary, 'Baixar resumo mensal (CSV)', f'ana_{code}_nivel_{level}_mensal.csv')
 
@@ -93,7 +113,7 @@ def explorer():
     st.subheader('Estações e séries da ANA')
     st.write('Use coordenadas para localizar estações próximas ou pesquise pelo nome ou código. '
              'Selecione uma estação para ver a série histórica e baixar os dados.')
-    st.caption('A busca localiza estações e séries observadas. Os estudos de previsão e operação continuam identificados como casos de Três Marias.')
+    st.caption('O diagnóstico utiliza somente a estação, variável e período selecionados. Não extrapola os resultados de Três Marias.')
     mode = st.radio('Como localizar a estação?', ('Coordenadas e raio', 'Nome ou código'), horizontal=True)
     with st.form('ana_search'):
         variable = st.selectbox('Variável medida', tuple(VARIABLES))

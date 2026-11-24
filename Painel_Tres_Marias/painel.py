@@ -736,7 +736,16 @@ def scenarios():
     daily_card.metric('Média diária oficial', f'{number(selected.media_diaria, 0)} m³/s')
     minimum_card.metric('Mínimo diurno', f'{number(selected.minimo_diurno, 0)} m³/s')
     duration_card.metric('Maior sequência abaixo do patamar', f'{int(selected.maior_sequencia)} h')
-    hourly_view(hourly, day, selected.media_diaria, limit)
+    st.markdown('### Visão coordenada · dia × hora')
+    calendar_col, detail_col = st.columns([1, 1.5], gap='medium')
+    with calendar_col:
+        calendar = go.Figure(go.Bar(x=summary.index, y=summary.horas_abaixo.where(summary.elegivel), marker_color=['#e8a33d' if d == day else '#0d1d96' for d in summary.index], name='Horas abaixo'))
+        calendar.update_layout(title='Horas abaixo do patamar por dia', yaxis_title='Horas', xaxis_title='Dia', showlegend=False)
+        calendar.add_vline(x=day.timestamp()*1000, line_color='#e8a33d', line_width=2)
+        figure(calendar, 'coordinated_calendar', 'Mesmo mês e patamar do diagnóstico. O dia selecionado aparece em destaque.')
+    with detail_col:
+        hourly_view(hourly, day, selected.media_diaria, limit)
+    st.caption('Organização de visão geral e detalhe inspirada em ProWis (Souza et al., 2024): https://doi.org/10.1109/TVCG.2023.3326514. A adaptação não altera o método de cálculo.')
     export(summary, 'Baixar diagnóstico diário', f'diagnostico_{key}.csv', index=True)
     with st.expander('O que a estação 41020002 pode confirmar a jusante'):
         downstream_evidence(intervals, summary, limit, day, daily)

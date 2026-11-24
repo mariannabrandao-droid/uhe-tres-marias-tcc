@@ -69,44 +69,16 @@ def context_figures(figure):
         st.caption('Esquema conceitual, sem escala. Afluência, armazenamento, turbinamento, vertimento e defluência são variáveis distintas.')
 
     st.markdown('### Três Marias no encadeamento dos principais aproveitamentos')
-    nodes = [
-        ('Três Marias', 0, 0, '396 MW · 19 bilhões m³ totais · 15 bilhões m³ úteis'),
-        ('Sobradinho', 0, 1, '1.050 MW · 34 bilhões m³ totais · 28 bilhões m³ úteis'),
-        ('Itaparica', 0, 2, '1.500 MW · 10 bilhões m³ totais · 3 bilhões m³ úteis'),
-        ('Moxotó', 0, 3, '400 MW'),
-        ('Paulo Afonso I–III', 0, 4, 'I: 180 MW · II: 445 MW · III: 800 MW'),
-        ('Paulo Afonso IV', -.55, 4, '2.460 MW'),
-        ('Xingó', 0, 5, '3.000 MW'),
-    ]
-    chart = go.Figure()
-    for route in ((0, 1, 2, 3, 4, 6), (2, 5, 6)):
-        chart.add_scatter(
-            x=[nodes[i][1] for i in route], y=[nodes[i][2] for i in route],
-            mode='lines', line={'color': '#3a8097', 'width': 3},
-            hoverinfo='skip', showlegend=False,
-        )
-    names, x, y, values = zip(*nodes)
-    chart.add_scatter(
-        x=x, y=y, mode='markers', marker={'size': 15, 'color': '#087eae'},
-        text=names, customdata=values, showlegend=False,
-        hovertemplate='<b>%{text}</b><br>%{customdata}<extra></extra>',
-    )
-    for name, position, row, _ in nodes:
-        chart.add_annotation(
-            x=position, y=row, text=name, showarrow=False,
-            xanchor='left', xshift=12, font=dict(size=12, color='#173b52'),
-        )
-    chart.update_layout(
-        title='Principais aproveitamentos do São Francisco · montante → jusante',
-        height=385, hovermode='closest',
-        yaxis=dict(visible=False, range=[5.45, -.45], fixedrange=True),
-        xaxis=dict(visible=False, range=[-.68, .78], fixedrange=True),
-    )
-    figure(
-        chart, 'tcc_fig03',
-        'Esquema de montante a jusante, sem escala. Passe sobre os pontos para ver as potências e os volumes '
-        'indicados na referência histórica da ANA (2013). Os valores retratam essa referência.'
-    )
+    st.markdown("""
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:18px;background:white;border:1px solid #eee;border-radius:0 30px">
+    <div style="background:#0d1d96;color:white;padding:15px;border-radius:0 18px"><b>Três Marias</b><br>396 MW</div>
+    <span>→</span><div style="background:#e7effb;padding:15px;border-radius:0 18px"><b>Sobradinho</b><br>1.050 MW</div>
+    <span>→</span><div style="background:#e7effb;padding:15px;border-radius:0 18px"><b>Itaparica</b><br>1.500 MW</div>
+    <span>→</span><div style="background:#e7effb;padding:15px;border-radius:0 18px"><b>Complexo Paulo Afonso / Moxotó</b><br>Ramificações do sistema</div>
+    <span>→</span><div style="background:#e7effb;padding:15px;border-radius:0 18px"><b>Xingó</b><br>3.000 MW</div>
+    </div>""", unsafe_allow_html=True)
+    st.caption('Sequência conceitual simplificada de montante a jusante, sem escala. Fonte: referência histórica ANA (2013). Não representa a topologia detalhada das derivações.')
+
 
 def historical_figures(figure):
     with st.expander('Vazões históricas por ano e mês'):

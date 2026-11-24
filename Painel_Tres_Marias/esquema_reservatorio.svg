@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440" font-family="Arial,sans-serif">
+<rect width="800" height="440" fill="#fafafa"/>
+<path d="M0 130 L120 95 240 120 350 150 410 260 500 305 800 305 V440 H0Z" fill="#d8d6cd"/>
+<path d="M0 150 H350 L380 280 H0Z" fill="#96c3eb"/>
+<path d="M0 150 Q25 143 50 150 T100 150 T150 150 T200 150 T250 150 T300 150 T350 150" stroke="#0d6aff" stroke-width="4" fill="none"/>
+<path d="M350 105 H388 L465 305 H340Z" fill="#89919e" stroke="#707070" stroke-width="2"/>
+<path d="M325 240 H380 L455 320 H530" stroke="#0d1d96" stroke-width="15" fill="none"/>
+<rect x="455" y="265" width="90" height="65" rx="4" fill="#fff" stroke="#002068" stroke-width="2"/>
+<circle cx="490" cy="302" r="17" fill="#96c3eb" stroke="#0d1d96" stroke-width="3"/>
+<path d="M360 110 Q420 150 445 230 T560 345" stroke="#0d6aff" stroke-width="12" fill="none" stroke-dasharray="12 5"/>
+<path d="M530 330 H800 V390 H530Z" fill="#96c3eb"/>
+<g fill="#002068" font-size="17" font-weight="bold"><text x="24" y="60">Montante</text><text x="590" y="60">Jusante</text><text x="105" y="190">Reservatório</text><text x="333" y="85">Barragem</text><text x="453" y="250">Turbinas</text><text x="485" y="160">Vertedouro</text><text x="600" y="365">Defluência</text></g>
+<g stroke="#0d1d96" stroke-width="2" fill="none"><path d="M40 120 H155 l-12 -7 m12 7 -12 7"/><path d="M530 165 L430 185"/><path d="M630 405 H750 l-12 -7 m12 7 -12 7"/></g>
+<text x="40" y="110" fill="#0d1d96" font-size="15">Afluência</text><text x="90" y="420" fill="#707070" font-size="14">Representação conceitual • sem escala</text></svg>

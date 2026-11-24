@@ -243,7 +243,7 @@ def downstream_evidence(hourly, days, limit, day, daily):
     st.caption('O pareamento usa a mesma hora do relógio e serve à triagem. Uma análise de propagação '
                'exige estimar o tempo de viagem entre os pontos. A origem e a validação declaradas '
                'para arquivos importados devem ser verificadas com o órgão responsável.')
-    if not flagged.empty:
+    if not flagged.empty and downstream is not None:
         visible = flagged.reset_index()[['dia', 'media_diaria', 'minimo_diurno',
                                         'cobertura_jusante', 'minimo_disponivel_jusante',
                                         'intervalos_jusante_abaixo']]
@@ -251,6 +251,8 @@ def downstream_evidence(hourly, days, limit, day, daily):
             'dia': 'Data', 'media_diaria': 'Média ONS (m³/s)', 'minimo_diurno': 'Mínimo diurno ONS (m³/s)',
             'cobertura_jusante': 'Cobertura 41020002', 'minimo_disponivel_jusante': 'Mínimo disponível 41020002 (m³/s)',
             'intervalos_jusante_abaixo': 'Registros disponíveis abaixo na estação'}))
+    if downstream is None:
+        st.info('Sem medições contemporâneas importadas: não há resultado de comparação a jusante. O CSV abaixo contém os intervalos ONS para orientar a solicitação de dados.')
     selected = paired.loc[paired.dia.eq(day)]
     if selected.vazao_41020002_m3s.notna().any():
         chart = go.Figure()
@@ -429,9 +431,6 @@ def science(frame, sar, defense=True):
         records = describe(frame, {**FLOW_POSTS, **RAIN_POSTS})
         table(records.assign(Início=records.Início.map(month), Fim=records.Fim.map(month)))
         st.caption('Cadastro de estações e séries mensais organizadas · HidroWeb/ANA, seção 5.4.2.')
-        with st.expander('Explorar o mapa dos postos selecionados'):
-            figure(network_map(records['Código ANA'].tolist()), 'station_map',
-                   'Coordenadas cadastrais ANA/HidroWeb, seção 5.4.2.')
         with st.expander('Conferir séries mensais selecionadas'):
             groups = {'Vazões dos postos': list(FLOW_POSTS), 'Chuva nos postos': list(RAIN_POSTS)}
             selected = st.selectbox('Grupo', groups)
@@ -747,7 +746,9 @@ def scenarios():
         hourly_view(hourly, day, selected.media_diaria, limit)
     st.caption('Organização de visão geral e detalhe inspirada em ProWis (Souza et al., 2024): https://doi.org/10.1109/TVCG.2023.3326514. A adaptação não altera o método de cálculo.')
     export(summary, 'Baixar diagnóstico diário', f'diagnostico_{key}.csv', index=True)
-    with st.expander('O que a estação 41020002 pode confirmar a jusante'):
+    st.markdown('### Limite da evidência a jusante')
+    st.info('Os registros ONS demonstram a variação da descarga na usina. Não demonstram, isoladamente, a vazão em outro ponto do rio. A série histórica disponível da estação 41020002 termina em outubro de 2006 e não permite confirmar os episódios de outubro de 2026.')
+    with st.expander('Verificação complementar opcional · importar medições contemporâneas'):
         downstream_evidence(intervals, summary, limit, day, daily)
 
 

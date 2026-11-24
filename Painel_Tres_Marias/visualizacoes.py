@@ -31,48 +31,9 @@ def context_figures(figure):
         )
 
     with right:
-        diagram = go.Figure()
-        boxes = [
-            ('Afluência', 'Água que chega ao reservatório', .10, .50, '#dff3f3'),
-            ('Reservatório', 'Armazena e regulariza a água', .38, .50, '#cfe6f7'),
-            ('Turbinas', 'Liberação com geração', .66, .68, '#e4f1fb'),
-            ('Vertedouro', 'Liberação sem turbinar', .66, .32, '#fff0d9'),
-            ('Rio a jusante', 'Defluência resultante', .91, .50, '#dff3f3'),
-        ]
-        for title, subtitle, x, y, color in boxes:
-            diagram.add_shape(
-                type='rect', x0=x-.105, x1=x+.105, y0=y-.12, y1=y+.12,
-                line=dict(color='#2b6078', width=1.3), fillcolor=color,
-            )
-            diagram.add_annotation(
-                x=x, y=y, text=f'<b>{title}</b><br><span style="font-size:10px">{subtitle}</span>',
-                showarrow=False, align='center', font=dict(color='#173b52', size=12),
-            )
-        arrows = [
-            (.205, .50, .275, .50),
-            (.485, .50, .555, .68),
-            (.485, .50, .555, .32),
-            (.765, .68, .805, .54),
-            (.765, .32, .805, .46),
-        ]
-        for x0, y0, x1, y1 in arrows:
-            diagram.add_annotation(
-                x=x1, y=y1, ax=x0, ay=y0, xref='x', yref='y', axref='x', ayref='y',
-                showarrow=True, arrowhead=3, arrowsize=1.2, arrowwidth=1.5, arrowcolor='#2b6078',
-                text='',
-            )
-        diagram.update_layout(
-            title='Leitura conceitual da operação do reservatório',
-            height=415, showlegend=False,
-            xaxis=dict(visible=False, range=[-.03, 1.04], fixedrange=True),
-            yaxis=dict(visible=False, range=[.08, .92], fixedrange=True),
-            hovermode=False,
-        )
-        figure(
-            diagram, 'reservoir_operation_scheme',
-            'Esquema conceitual, sem escala e sem representar balanço hídrico quantitativo. '
-            'Afluência, armazenamento e formas de liberação são variáveis distintas no painel.'
-        )
+        st.markdown('**Funcionamento físico do reservatório**')
+        st.image(str(ROOT / 'esquema_reservatorio.svg'), width='stretch')
+        st.caption('Esquema conceitual, sem escala. Afluência, armazenamento, turbinamento, vertimento e defluência são variáveis distintas.')
 
     st.markdown('### Três Marias no encadeamento dos principais aproveitamentos')
     nodes = [

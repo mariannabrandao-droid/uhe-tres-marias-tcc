@@ -1,9 +1,9 @@
 # Consultar estações e séries da ANA
 
-1. Rode `Painel_Tres_Marias/app_publica.py` e abra **Histórico hidroclimático → Outra localização · ANA**.
+1. Rode `Painel_Tres_Marias/app_publica.py` e abra **Configuração da área**.
 2. Selecione **Vazão** ou **Chuva**. Em **Coordenadas e raio**, informe latitude e longitude em graus decimais e o raio em quilômetros. Em **Nome ou código**, use o nome cadastrado ou o código ANA.
 3. Clique em **Buscar estações**. Consulte o mapa e a tabela com informações de bacia, sub-bacia e estado. O catálogo filtrado pode ser salvo em CSV.
-4. Selecione uma estação, o período e o nível de consistência. Clique em **Consultar série histórica**. Confira a cobertura e baixe o CSV diário. Expanda **Resumo mensal e cobertura** para baixar os totais de chuva ou as médias de vazão dos meses completos.
+4. Selecione uma estação, o período e o nível de consistência. Clique em **Consultar série histórica**. Confira a cobertura e baixe o CSV diário. Expanda **Resumo mensal e cobertura** para baixar os totais de chuva ou as médias de vazão dos meses completos. Cada série consultada fica guardada durante a sessão e pode ser aberta em **Histórico e disponibilidade** e comparada em **Correlações hidroclimáticas**.
 
 Para experimentar em outra bacia, use latitude **−19,93**, longitude **−43,17** e raio **25 km**. Procure a estação de vazão **56610000** ou a de chuva **01943001**, ambas em Rio Piracicaba (MG), sub-bacia do Rio Doce. Use o período de **1 a 31 de janeiro de 2000**, nível **2 · Consistido**.
 

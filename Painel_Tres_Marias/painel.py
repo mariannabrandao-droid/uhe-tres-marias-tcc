@@ -58,6 +58,32 @@ def configure_page(title):
     .pill{display:inline-block;background:#e1f4f4;border:1px solid #b8e4e4;color:#176d76;border-radius:20px;font-size:.74rem;padding:4px 11px;margin:0 5px 7px 0;font-weight:700}
     .footerline{margin-top:25px;padding-top:16px;border-top:1px solid #d9e5ed;color:#788a9a;font-size:.78rem}
     .stApp [data-testid='stSidebar'] [role='radiogroup'] label{transition:background .2s ease}.stApp [data-testid='stSidebar'] [role='radiogroup'] label:hover{background:#19445d!important}.stApp [data-testid='stHorizontalBlock']{align-items:stretch}.stApp [data-testid='stMetric']{height:100%}.stApp [data-testid='stDataFrame']{font-size:.86rem}.stApp .stTabs [data-baseweb='tab']{font-weight:700}.insight{background:#eff8fb;border-left:4px solid #0d9eaa;padding:13px 17px;border-radius:10px;color:#21465b;margin:12px 0}.focuscard{background:#fff;border:1px solid var(--line);border-top:3px solid #0b9a9c;border-radius:14px;padding:18px;min-height:120px;color:#315169}.focuscard b{color:#123450;font-size:1rem}.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:10px 0 24px}.tl-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;position:relative;min-height:150px}.tl-item:before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#0b9a9c,#1161a8);border-radius:14px 14px 0 0}.tl-year{display:block;font-weight:800;color:#0b9298;font-size:.78rem;letter-spacing:.08em;margin-bottom:8px}.tl-item b{display:block;color:#123450;margin-bottom:6px}.tl-item small{display:block;color:#60758b;line-height:1.35}.warningbox{background:#fff6e8;border-left:4px solid #e59a31;padding:13px 17px;border-radius:10px;color:#70542b;margin:12px 0}@media(max-width:850px){.block-container{padding:1rem .8rem 3rem!important}.hero{padding:21px}.hero h1{font-size:1.45rem!important}.timeline{grid-template-columns:1fr}.tl-item{min-height:auto}}
+
+    :root{--navy:#0d1d96;--navy2:#002068;--teal:#0d6aff;--bg:#fafafa;--muted:#707070;--line:#eeeeee}
+    .stApp,[data-testid=stAppViewContainer]{background:#fafafa;color:#1f2333}
+    html,body,.stApp,h1,h2,h3,h4{font-family:Poppins,system-ui,sans-serif!important}
+    h1,h2,h3,h4{color:#0d1d96!important;letter-spacing:normal!important;font-weight:500!important}
+    .block-container{max-width:1600px!important;padding:1.5rem 3rem 4rem!important}
+    [data-testid=stSidebar]{background:#0d1d96!important;border:0}
+    [data-testid=stSidebar] *{color:white!important}
+    [data-testid=stSidebar] .stRadio label{border-radius:6px;padding:9px 12px}
+    [data-testid=stSidebar] .stRadio label:has(input:checked){background:#ffffff20!important;border-left:3px solid #96c3eb}
+    .hero{background:#0d1d96;border:0;border-radius:0 30px;padding:22px 32px;box-shadow:none;min-height:90px}
+    .hero img{background:white;padding:6px;border-radius:6px;object-fit:contain}
+    .hero h1,.hero p{color:white!important}
+    .hero:after{display:none}
+    .stPlotlyChart,div[data-testid=stMetric],.focuscard,.tl-item,[data-testid=stVerticalBlockBorderWrapper]{background:white;border:1px solid #eee!important;border-radius:0 30px!important;box-shadow:none!important}
+    div[data-testid=stMetric]{padding:16px 20px;min-height:88px}
+    [data-testid=stMetricValue]{color:#0d1d96!important;font-size:1.45rem!important;font-weight:600!important}
+    [data-testid=stMetricLabel]{color:#707070!important}
+    .stButton>button,.stDownloadButton>button,[data-testid=stLinkButton] a{border-radius:100px!important;background:#0d1d96;color:white;border:1px solid #0d1d96;font-weight:500}
+    .stButton>button:hover,.stDownloadButton>button:hover{background:#081387;color:white}
+    .insight{background:#f2f3fb;border-left:4px solid #0d1d96;color:#1f2333;border-radius:0 12px}
+    .tl-item:before{background:#0d1d96;border-radius:0 30px 0 0}
+    .tl-year,.focuscard b,.smallhead{color:#0d1d96}
+    .pill{background:#f2f3fb;color:#0d1d96;border-color:#d5d9f3}
+    [data-testid=stDataFrame]{border:1px solid #eee;border-radius:6px}
+    @media(max-width:850px){.block-container{padding:1rem!important}.hero{padding:16px}.timeline{grid-template-columns:1fr}}
     </style>""",unsafe_allow_html=True)
     logo = b64encode((ROOT / 'assets' / 'logo_uff.png').read_bytes()).decode('ascii')
     st.markdown(f'<div class="hero"><img src="data:image/png;base64,{logo}" width="72" alt="Universidade Federal Fluminense">'
@@ -88,10 +114,10 @@ MPF_ACAO = ('https://www.mpf.mp.br/o-mpf/unidades/pr-mg/noticias/'
 
 def graph(fig,key,height=355):
  fig.update_layout(template='plotly_white',height=fig.layout.height or height,margin=dict(l=18,r=18,t=55,b=65),
-  paper_bgcolor='#ffffff',plot_bgcolor='#ffffff',font=dict(family='DM Sans, Arial',color='#425d73',size=12),
-  title_font=dict(family='Manrope, Arial',size=15,color='#15334d'),
+  paper_bgcolor='#ffffff',plot_bgcolor='#ffffff',font=dict(family='Poppins, Arial',color='#1f2333',size=12),
+  title_font=dict(family='Poppins, Arial',size=15,color='#0d1d96'),
   legend=dict(orientation='h',y=-.28,x=0,font=dict(size=11)),
-  hovermode=fig.layout.hovermode or 'x unified',colorway=['#087eae','#12a9a0','#f3a54b','#8c70c9','#df7185'],
+  hovermode=fig.layout.hovermode or 'x unified',colorway=['#0d1d96','#0d6aff','#e8a33d','#707070','#4c9432'],
   xaxis=dict(showgrid=False,zeroline=False,automargin=True),yaxis=dict(gridcolor='#edf2f6',zeroline=False,automargin=True))
  st.plotly_chart(fig,width="stretch",key=key,config={'displaylogo':False,'responsive':True})
 
@@ -448,9 +474,12 @@ def science(frame, sar, defense=True):
                                       name=f'Q{exceedance} = {number(quantile, 2)} m³/s')
             chart.update_layout(title='Permanência da vazão natural mensal',
                                 xaxis_title='Frequência de excedência (%)', yaxis_title='Vazão (m³/s)')
-            figure(chart, 'sar_permanence', 'ANA/SAR, meses completos. Posição de Weibull e interpolação linear, seções 5.6 e 6.1.')
-            export(curve, 'Baixar curva de permanência', 'permanencia_sar.csv')
-            seasonality(sar, FLOW[0], 'sar_season')
+            permanence_col, season_col = st.columns(2, gap='medium')
+            with permanence_col:
+                figure(chart, 'sar_permanence', 'ANA/SAR, meses completos. Posição de Weibull e interpolação linear, seções 5.6 e 6.1.')
+                export(curve, 'Baixar curva de permanência', 'permanencia_sar.csv')
+            with season_col:
+                seasonality(sar, FLOW[0], 'sar_season')
             month_medians = series.dropna().groupby(series.dropna().index.month).median()
             driest_month = int(month_medians.idxmin())
             wettest_month = int(month_medians.idxmax())
@@ -585,11 +614,14 @@ def operations():
     flow_records = records[list(fields)].rename(columns=fields)
     chart = px.line(flow_records, title='Entradas e liberações · outubro de 2026',
                     labels={'value': 'Vazão (m³/s)', ons.STAMP: 'Dia', 'variable': 'Variável'})
-    figure(chart, 'operation_flows', 'ONS/SFTMAR · valores diários. As linhas descrevem variáveis operacionais distintas.')
+    flow_col, storage_col = st.columns([1.3, 1], gap='medium')
+    with flow_col:
+        figure(chart, 'operation_flows', 'ONS/SFTMAR · valores diários. As linhas descrevem variáveis operacionais distintas.')
     volume = records['val_volumeutilcon']
     chart = px.line(volume, title='Evolução do volume útil',
                     labels={'value': 'Volume útil (%)', ons.STAMP: 'Dia'})
-    figure(chart, 'operation_storage', 'ONS/SFTMAR · volume útil registrado. A leitura conjunta contextualiza a operação.')
+    with storage_col:
+        figure(chart, 'operation_storage', 'ONS/SFTMAR · volume útil registrado. A leitura conjunta contextualiza a operação.')
     volume_valid = volume.dropna()
     mean_afluence = records['val_vazaoafluente'].mean()
     mean_defluence = records['val_vazaodefluente'].mean()

@@ -193,6 +193,9 @@ def station_results(variable, location, stations):
                 else:
                     st.session_state['ana_series_result'] = (code, variable, start, end, level, series)
     result = st.session_state.get('ana_series_result')
+    if result is not None and not result[5].empty:
+        collection = st.session_state.setdefault('study_series', {})
+        collection[(result[0], result[1], result[2], result[3], result[4])] = result
     if result is None or result[:2] != (code, variable):
         return
     _, _, start, end, level, series = result

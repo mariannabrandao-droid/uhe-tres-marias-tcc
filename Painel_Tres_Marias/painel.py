@@ -394,6 +394,12 @@ def science(frame, sar, defense=True):
                  'pela sobreposição temporal. Barramento e Porto Mesquita contextualizam a chuva histórica. '
                  'Andrequicé permite a comparação com a vazão natural recente. Indaiá é referência de tributário '
                  'e Três Marias Jusante é o posto de controle histórico.')
+        st.markdown(
+            '<div class="insight"><b>Escopo desta visualização:</b> o gráfico de vazões e chuva mostra as séries '
+            'selecionadas para a análise, e não todos os arquivos existentes no pacote da ANA. O inventário completo '
+            'permanece disponível na página de rastreabilidade para conferir os 45 códigos levantados e os arquivos efetivamente obtidos.</div>',
+            unsafe_allow_html=True,
+        )
         records = describe(frame, {**FLOW_POSTS, **RAIN_POSTS})
         table(records.assign(Início=records.Início.map(month), Fim=records.Fim.map(month)))
         st.caption('Cadastro de estações e séries mensais organizadas · HidroWeb/ANA, seção 5.4.2.')
@@ -723,6 +729,11 @@ def synthesis():
             '[Mahjarin et al. (2026)](https://doi.org/10.2166/hydro.2026.164).\n'
             '- [Cataldi et al. (2025)](https://doi.org/10.3390/atmos16060699) dão contexto aos recortes climáticos. '
             'Os coeficientes do painel descrevem associações na amostra selecionada.\n'
+            '- [Souza et al. (2022)](https://doi.org/10.1016/j.cag.2022.01.007) e '
+            '[Souza et al. (2024) · ProWIS](https://doi.org/10.1109/TVCG.2023.3326514) orientam a escolha de uma '
+            'exploração visual em que o usuário parte de uma visão geral, seleciona recortes e inspeciona episódios e variáveis, '
+            'preservando contexto e rastreabilidade. O painel aplica esse princípio ao problema hidroclimático, sem reproduzir '
+            'a arquitetura dos sistemas desses autores.\n'
             '- [Paiva, Montenegro e Cataldi (2020)](https://doi.org/10.1590/2318-0331.252020190067) '
             'estudaram a previsão mensal em Três Marias com CFS e modelagem chuva–vazão. '
             'O experimento deste painel usa vazão antecedente e calendário, com duas referências simples.'

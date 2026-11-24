@@ -2,7 +2,7 @@
 
 Consulte disponibilidade hídrica mensal, associações chuva–vazão, previsões retrospectivas e registros de operação. O exemplo integra dados ANA, ONS e acervo climático para localizar episódios de baixa liberação e recuperar os registros usados na análise.
 
-Na consulta livre, abra **Histórico hidroclimático → Outra localização · ANA** para pesquisar estações de chuva ou vazão e baixar séries de outras bacias. [Como pesquisar estações e séries](docs/CONSULTA_ANA.md)
+A consulta livre (`app_publica.py`) abre em **Configuração da área**, onde é possível pesquisar estações de chuva ou vazão da ANA, reunir séries e calcular correlações mensais com defasagem. Para telas menores, utilize `app_publica_responsiva.py` e consulte [Compatibilidade](Painel_Tres_Marias/COMPATIBILIDADE.md). [Como pesquisar estações e séries](docs/CONSULTA_ANA.md)
 
 [Abrir painel publicado](https://uhe-tres-marias-tcc-otuk87syyzpg5dh82bdq6f.streamlit.app/)
 

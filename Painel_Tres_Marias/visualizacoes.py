@@ -23,6 +23,7 @@ def context_figures(figure):
             title='Três Marias na Região Hidrográfica São Francisco',
             height=415,
         )
+        regional.update_traces(hoverinfo='skip', hovertemplate=None)
         figure(
             regional, 'tcc_fig02',
             'Localização do empreendimento na Região Hidrográfica São Francisco. '

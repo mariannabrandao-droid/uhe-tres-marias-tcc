@@ -13,40 +13,106 @@ from mapas import regional_map
 
 
 def context_figures(figure):
-    regional = regional_map()
-    regional.update_layout(title='Três Marias na Região Hidrográfica São Francisco')
-    with st.expander('Bacia e sistema de reservatórios', expanded=True):
-        figure(regional, 'tcc_fig02',
-               'Limite da Região Hidrográfica São Francisco e posto do Barramento. '
-               'Redesenho da localização com a divisão hidrográfica e o cadastro ANA/SNIRH. '
-               'O contorno cobre toda a região hidrográfica.')
-        nodes = [
-            ('Três Marias', 0, 0, '396 MW · 19 bilhões m³ totais · 15 bilhões m³ úteis'),
-            ('Sobradinho', 0, 1, '1.050 MW · 34 bilhões m³ totais · 28 bilhões m³ úteis'),
-            ('Itaparica', 0, 2, '1.500 MW · 10 bilhões m³ totais · 3 bilhões m³ úteis'),
-            ('Moxotó', 0, 3, '400 MW'),
-            ('Paulo Afonso I–III', 0, 4, 'I: 180 MW · II: 445 MW · III: 800 MW'),
-            ('Paulo Afonso IV', -.55, 4, '2.460 MW'),
-            ('Xingó', 0, 5, '3.000 MW'),
-        ]
-        chart = go.Figure()
-        for route in ((0, 1, 2, 3, 4, 6), (2, 5, 6)):
-            chart.add_scatter(x=[nodes[i][1] for i in route], y=[nodes[i][2] for i in route],
-                              mode='lines', line={'color': '#38829f'}, hoverinfo='skip', showlegend=False)
-        names, x, y, values = zip(*nodes)
-        chart.add_scatter(x=x, y=y, mode='markers', marker={'size': 13, 'color': '#087eae'},
-                          text=names, customdata=values, showlegend=False,
-                          hovertemplate='<b>%{text}</b><br>%{customdata}<extra></extra>')
-        for name, position, row, _ in nodes:
-            chart.add_annotation(x=position, y=row, text=name, showarrow=False, xanchor='left', xshift=10)
-        chart.update_layout(title='Principais aproveitamentos no São Francisco', height=385,
-                            hovermode='closest',
-                            yaxis=dict(visible=False, range=[5.45, -.45], fixedrange=True),
-                            xaxis=dict(visible=False, range=[-.68, .78], fixedrange=True))
-        figure(chart, 'tcc_fig03', 'Esquema de montante a jusante, sem escala. Passe sobre os pontos para '
-               'ver as potências e os volumes indicados na figura histórica da ANA (2013). '
-               'Os valores retratam essa referência.')
+    """Visões de contexto: localização, funcionamento conceitual e encadeamento de reservatórios."""
+    st.markdown('### Onde a usina está e como a água percorre o sistema')
+    left, right = st.columns([1.08, .92], gap='large')
 
+    with left:
+        regional = regional_map()
+        regional.update_layout(
+            title='Três Marias na Região Hidrográfica São Francisco',
+            height=415,
+        )
+        regional.update_traces(hoverinfo='skip', hovertemplate=None)
+        figure(
+            regional, 'tcc_fig02',
+            'Localização do empreendimento na Região Hidrográfica São Francisco. '
+            'Base cartográfica ANA/SNIRH; o mapa serve à orientação espacial, não à análise de distância.'
+        )
+
+    with right:
+        diagram = go.Figure()
+        boxes = [
+            ('Afluência', 'Água que chega ao reservatório', .10, .50, '#dff3f3'),
+            ('Reservatório', 'Armazena e regulariza a água', .38, .50, '#cfe6f7'),
+            ('Turbinas', 'Liberação com geração', .66, .68, '#e4f1fb'),
+            ('Vertedouro', 'Liberação sem turbinar', .66, .32, '#fff0d9'),
+            ('Rio a jusante', 'Defluência resultante', .91, .50, '#dff3f3'),
+        ]
+        for title, subtitle, x, y, color in boxes:
+            diagram.add_shape(
+                type='rect', x0=x-.105, x1=x+.105, y0=y-.12, y1=y+.12,
+                line=dict(color='#2b6078', width=1.3), fillcolor=color,
+            )
+            diagram.add_annotation(
+                x=x, y=y, text=f'<b>{title}</b><br><span style="font-size:10px">{subtitle}</span>',
+                showarrow=False, align='center', font=dict(color='#173b52', size=12),
+            )
+        arrows = [
+            (.205, .50, .275, .50),
+            (.485, .50, .555, .68),
+            (.485, .50, .555, .32),
+            (.765, .68, .805, .54),
+            (.765, .32, .805, .46),
+        ]
+        for x0, y0, x1, y1 in arrows:
+            diagram.add_annotation(
+                x=x1, y=y1, ax=x0, ay=y0, xref='x', yref='y', axref='x', ayref='y',
+                showarrow=True, arrowhead=3, arrowsize=1.2, arrowwidth=1.5, arrowcolor='#2b6078',
+                text='',
+            )
+        diagram.update_layout(
+            title='Leitura conceitual da operação do reservatório',
+            height=415, showlegend=False,
+            xaxis=dict(visible=False, range=[-.03, 1.04], fixedrange=True),
+            yaxis=dict(visible=False, range=[.08, .92], fixedrange=True),
+            hovermode=False,
+        )
+        figure(
+            diagram, 'reservoir_operation_scheme',
+            'Esquema conceitual, sem escala e sem representar balanço hídrico quantitativo. '
+            'Afluência, armazenamento e formas de liberação são variáveis distintas no painel.'
+        )
+
+    st.markdown('### Três Marias no encadeamento dos principais aproveitamentos')
+    nodes = [
+        ('Três Marias', 0, 0, '396 MW · 19 bilhões m³ totais · 15 bilhões m³ úteis'),
+        ('Sobradinho', 0, 1, '1.050 MW · 34 bilhões m³ totais · 28 bilhões m³ úteis'),
+        ('Itaparica', 0, 2, '1.500 MW · 10 bilhões m³ totais · 3 bilhões m³ úteis'),
+        ('Moxotó', 0, 3, '400 MW'),
+        ('Paulo Afonso I–III', 0, 4, 'I: 180 MW · II: 445 MW · III: 800 MW'),
+        ('Paulo Afonso IV', -.55, 4, '2.460 MW'),
+        ('Xingó', 0, 5, '3.000 MW'),
+    ]
+    chart = go.Figure()
+    for route in ((0, 1, 2, 3, 4, 6), (2, 5, 6)):
+        chart.add_scatter(
+            x=[nodes[i][1] for i in route], y=[nodes[i][2] for i in route],
+            mode='lines', line={'color': '#3a8097', 'width': 3},
+            hoverinfo='skip', showlegend=False,
+        )
+    names, x, y, values = zip(*nodes)
+    chart.add_scatter(
+        x=x, y=y, mode='markers', marker={'size': 15, 'color': '#087eae'},
+        text=names, customdata=values, showlegend=False,
+        hovertemplate='<b>%{text}</b><br>%{customdata}<extra></extra>',
+    )
+    for name, position, row, _ in nodes:
+        chart.add_annotation(
+            x=position, y=row, text=name, showarrow=False,
+            xanchor='left', xshift=12, font=dict(size=12, color='#173b52'),
+        )
+    chart.update_layout(
+        title='Principais aproveitamentos do São Francisco · montante → jusante',
+        height=385, hovermode='closest',
+        yaxis=dict(visible=False, range=[5.45, -.45], fixedrange=True),
+        xaxis=dict(visible=False, range=[-.68, .78], fixedrange=True),
+    )
+    figure(
+        chart, 'tcc_fig03',
+        'Esquema de montante a jusante, sem escala. Passe sobre os pontos para ver as potências e os volumes '
+        'indicados na referência histórica da ANA (2013). Os valores retratam essa referência.'
+    )
 
 def historical_figures(figure):
     with st.expander('Vazões históricas por ano e mês'):

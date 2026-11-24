@@ -48,7 +48,7 @@ def correlations(collection):
 def main():
     configure_page('Consulta hidroclimática | ANA')
     collection=st.session_state.setdefault('study_series',{})
-    page=st.sidebar.radio('Etapas da análise',['Configuração da área','Histórico e disponibilidade','Correlações hidroclimáticas','Previsão e escala temporal','Síntese e exportação'])
+    page=st.sidebar.radio('Etapas da análise',['Configuração da área','Histórico e disponibilidade','Correlações hidroclimáticas','Limites e extensões','Síntese e exportação'])
     st.sidebar.caption(f'{len(collection)} séries armazenadas nesta sessão')
     if page=='Configuração da área':
         st.header('Configuração da área de estudo')
@@ -68,7 +68,7 @@ def main():
                 st.caption('Patamar exploratório, não limite legal ou operacional.')
     elif page=='Correlações hidroclimáticas':
         correlations(collection)
-    elif page=='Previsão e escala temporal':
+    elif page=='Limites e extensões':
         st.header('Requisitos para ampliar a análise')
         st.write('A previsão experimental exige protocolo retrospectivo e histórico suficiente. A análise horária exige registros horários contemporâneos. As séries convencionais ANA consultadas aqui são diárias.')
         st.info('ZCAS e bloqueios exigem índices climáticos com região e período adequados à área selecionada. Os índices de Três Marias não são aplicados automaticamente a outras bacias.')

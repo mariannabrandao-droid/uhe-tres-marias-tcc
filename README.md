@@ -15,6 +15,10 @@ A consulta livre (`app_publica.py`) abre em **Configuração da área**, onde é
 | Modificar uma tela, filtro ou base | [Manual de adaptação](docs/ADAPTAR.md) |
 | Conferir os dados e a metodologia | [Fontes, métodos e testes](docs/METODOS.md) |
 
+## Coleta convencional ANA
+
+O script [`coletar_ana.py`](coletar_ana.py), descrito na metodologia, consulta o ServiceANA e preserva respostas XML, tabelas CSV e o registro de falhas. Requer Python 3.10 ou superior. Execute `python coletar_ana.py --help` para consultar as opções. A conversão dos registros mensais em série diária é uma etapa posterior.
+
 ## Estrutura
 
 - [`Painel_Tres_Marias/app.py`](Painel_Tres_Marias/app.py) abre o percurso guiado no endereço publicado.

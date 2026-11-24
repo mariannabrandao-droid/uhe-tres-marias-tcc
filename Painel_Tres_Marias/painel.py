@@ -408,10 +408,16 @@ def science(frame, sar, defense=True):
             export(frame[keys].dropna(how='all'), 'Baixar séries selecionadas', 'postos_mensais.csv', index=True)
     elif topic == structure[1]:
         series = sar[FLOW[0]]
-        limit = st.number_input('Patamar descritivo da vazão natural mensal (m³/s)', min_value=0., value=150.)
+        limit = st.number_input('Patamar descritivo da vazão natural mensal (m³/s)', min_value=0., value=150., key='monthly_threshold')
         runs = low_runs(series, limit)
         st.write(f'{series.lt(limit).sum()} de {series.count()} meses abaixo do patamar. '
                  'Meses ausentes ou iguais ao patamar interrompem a sequência.')
+        st.markdown(
+            '<div class="insight"><b>Como ler este controle:</b> o patamar selecionado altera somente a classificação '
+            'dos meses e a identificação das sequências abaixo do limite. A curva de permanência e a sazonalidade são '
+            'propriedades da série observada e, por isso, não são recalculadas quando o patamar muda.</div>',
+            unsafe_allow_html=True,
+        )
         chart = go.Figure(go.Scatter(x=series.index, y=series, mode='lines', name='Vazão natural', connectgaps=False))
         low = series[series.lt(limit)]
         chart.add_scatter(x=low.index, y=low, mode='markers', name='Abaixo do patamar',
@@ -439,6 +445,19 @@ def science(frame, sar, defense=True):
             figure(chart, 'sar_permanence', 'ANA/SAR, meses completos. Posição de Weibull e interpolação linear, seções 5.6 e 6.1.')
             export(curve, 'Baixar curva de permanência', 'permanencia_sar.csv')
             seasonality(sar, FLOW[0], 'sar_season')
+            month_medians = series.dropna().groupby(series.dropna().index.month).median()
+            driest_month = int(month_medians.idxmin())
+            wettest_month = int(month_medians.idxmax())
+            q90 = hydro.reference_quantile(curve, 90)
+            q95 = hydro.reference_quantile(curve, 95)
+            st.markdown(
+                f'<div class="insight"><b>Leitura do histórico:</b> no conjunto mensal disponível, '
+                f'{MONTHS[driest_month-1]} apresenta a menor mediana sazonal e {MONTHS[wettest_month-1]} a maior. '
+                f'Na curva de permanência, Q90 = {number(q90, 2)} m³/s e Q95 = {number(q95, 2)} m³/s. '
+                'Esses valores descrevem frequência e sazonalidade da vazão natural; não constituem, por si só, '
+                'limites operativos ou ambientais.</div>',
+                unsafe_allow_html=True,
+            )
             export(sar[[FLOW[0]]].dropna(), 'Baixar vazão natural mensal', 'sar_vazao_natural.csv', index=True)
         historical_figures(figure)
     elif topic == structure[2]:
@@ -466,8 +485,6 @@ def science(frame, sar, defense=True):
             st.caption('Os recortes usam os mesmos meses válidos em cada comparação (ANA/HidroWeb, SAR e acervo climático, seções 5.6 e 6.2).')
             table(climate_result.round(3))
             export(climate_result, 'Baixar associações climáticas', 'associacoes_climaticas.csv')
-            figure(climate_map('ZCAS'), 'climate_map',
-                   'Recortes esquemáticos conforme Cataldi et al. (2025), seção 4.4.')
             climate_history(figure, climate)
         climate_references(figure)
     else:
@@ -492,15 +509,54 @@ def science(frame, sar, defense=True):
         chart.update_traces(line={'dash': 'solid'}, selector={'name': 'Observado'})
         chart.for_each_trace(lambda trace: trace.update(line={'dash': 'dot'}) if trace.name != 'Observado' else None)
         figure(chart, 'forecast_model', 'ANA/SAR e protocolo retrospectivo compartilhado. Localize os erros nos picos e vales.')
+        st.markdown(
+            '<div class="insight"><b>Como ler:</b> as linhas pontilhadas são estimativas retrospectivas para meses que '
+            'já possuem referência observada no backtest. Picos e vales mostram onde a magnitude do erro muda entre os métodos.</div>',
+            unsafe_allow_html=True,
+        )
+
+        projections_file = forecasts / 'projecoes.csv'
+        if projections_file.exists():
+            projections = pd.read_csv(projections_file, parse_dates=['alvo', 'origem', 'emissao'])
+            targets_2026 = projections.loc[
+                projections.alvo.isin([pd.Timestamp('2026-10-01'), pd.Timestamp('2026-11-01')])
+            ].copy()
+            if not targets_2026.empty:
+                target_chart = px.line(
+                    targets_2026, x='alvo', y='previsto', color='modelo', markers=True,
+                    line_dash='horizonte',
+                    labels={'alvo': 'Mês-alvo', 'previsto': 'Vazão natural prevista (m³/s)',
+                            'modelo': 'Método', 'horizonte': 'Horizonte'},
+                    title='Projeções arquivadas · outubro e novembro de 2026',
+                )
+                target_chart.update_xaxes(
+                    tickmode='array',
+                    tickvals=[pd.Timestamp('2026-10-01'), pd.Timestamp('2026-11-01')],
+                    ticktext=['Out/2026', 'Nov/2026'],
+                )
+                figure(
+                    target_chart, 'forecast_oct_nov',
+                    'Estimativas arquivadas no experimento da autora. O gráfico separa método e horizonte; '
+                    'a condição observada só é acrescentada quando há cobertura completa da referência.'
+                )
+                table(
+                    targets_2026[['alvo', 'origem', 'horizonte', 'modelo', 'previsto']]
+                    .rename(columns={'alvo': 'Mês-alvo', 'origem': 'Origem', 'horizonte': 'Horizonte',
+                                     'modelo': 'Método', 'previsto': 'Previsto (m³/s)'})
+                    .round(2)
+                )
+            else:
+                st.info('O arquivo de projeções não contém registros arquivados para outubro ou novembro de 2026.')
         export(sample, 'Baixar valores observados e estimados', f'previsao_m{horizon}.csv')
-        metrics = pd.read_csv(forecasts / 'metricas.csv').query("etapa == 'Auditoria' and horizonte in (1, 2)")
+        metrics = pd.read_csv(forecasts / 'metricas.csv').query("etapa == 'Auditoria' and horizonte == @horizon")
         metrics = metrics.pivot(index=['horizonte', 'recorte', 'n'], columns='modelo', values='MAE')
         metrics = metrics.reset_index().rename(columns={'horizonte': 'Horizonte', 'recorte': 'Recorte', 'n': 'Meses'})
         order = ('Todos', 'Seca (mai–out)', 'Baixa (<150 m³/s)')
         metrics['Recorte'] = pd.Categorical(metrics.Recorte, categories=order, ordered=True)
         metrics = metrics.sort_values(['Horizonte', 'Recorte']).reset_index(drop=True)
         metrics['Horizonte'] = metrics.Horizonte.map(lambda value: f'M+{value}')
-        st.markdown('**Erro absoluto médio (m³/s)**')
+        st.markdown(f'**Erro absoluto médio · M+{horizon} (m³/s)**')
+        st.caption('A tabela acompanha o horizonte selecionado acima; M+1 e M+2 não são misturados na mesma leitura.')
         table(metrics[['Recorte', 'Horizonte', 'Meses', 'Persistência', 'Climatologia', 'Ridge']].round(2))
         export(metrics, 'Baixar erros da auditoria', 'auditoria_mensal.csv')
         with st.expander('Checagem complementar com ONS'):
@@ -528,6 +584,21 @@ def operations():
     chart = px.line(volume, title='Evolução do volume útil',
                     labels={'value': 'Volume útil (%)', ons.STAMP: 'Dia'})
     figure(chart, 'operation_storage', 'ONS/SFTMAR · volume útil registrado. A leitura conjunta contextualiza a operação.')
+    volume_valid = volume.dropna()
+    mean_afluence = records['val_vazaoafluente'].mean()
+    mean_defluence = records['val_vazaodefluente'].mean()
+    volume_delta = volume_valid.iloc[-1] - volume_valid.iloc[0] if len(volume_valid) >= 2 else np.nan
+    st.markdown(
+        f'<div class="insight"><b>Leitura de outubro de 2026:</b> a afluência média no recorte foi '
+        f'{number(mean_afluence, 1)} m³/s e a defluência média, {number(mean_defluence, 1)} m³/s. '
+        f'O volume útil variou {number(volume_delta, 2)} ponto(s) percentual(is) entre o primeiro e o último '
+        'registro válido. A leitura conjunta é mais informativa do que interpretar qualquer uma dessas linhas isoladamente.</div>',
+        unsafe_allow_html=True,
+    )
+    st.caption(
+        'Afluência descreve a entrada; volume útil descreve o estoque; turbinada e vertida descrevem vias de liberação; '
+        'defluência descreve a saída total. Diferenças entre essas curvas não devem ser lidas como erro de medição.'
+    )
     with st.expander('Consultar registros diários e geração'):
         table(records.reset_index())
         st.caption('ONS · SFTMAR (hidráulica) e MGTMAR (geração). Geração média em MW para dias com 24 valores válidos.')
@@ -573,10 +644,18 @@ def hourly_view(hourly, day, avg, limit):
 
 def scenarios():
     st.header('Vazão liberada · da média diária ao intervalo horário')
-    limit = st.number_input('Patamar de comparação (m³/s)', min_value=0., value=THRESHOLD, step=10.)
+    limit = st.number_input('Patamar de comparação da defluência horária (m³/s)', min_value=0., value=THRESHOLD, step=10., key='operational_threshold')
     st.write(f'O diagnóstico sinaliza dias com média diária igual ou superior a {limit:g} m³/s '
              'e ao menos uma hora abaixo desse valor entre 6 h e 18 h. '
              'Cada dia elegível tem média oficial e os 12 registros da janela.')
+    monthly_limit = st.session_state.get('monthly_threshold', 150.0)
+    st.markdown(
+        f'<div class="insight"><b>Ponte entre as escalas:</b> na página histórica, o patamar mensal atualmente '
+        f'considerado é {monthly_limit:g} m³/s de <i>vazão natural mensal</i>. Aqui, o patamar é {limit:g} m³/s de '
+        '<i>defluência horária</i>. Os controles são apresentados em conjunto porque ambos ajudam a localizar condições '
+        'de interesse, mas não são equivalentes: mudam a variável, a escala temporal e o ponto de referência.</div>',
+        unsafe_allow_html=True,
+    )
     st.caption('A contagem descreve diferenças entre escalas temporais. A avaliação de conformidade depende da regra aplicável e de evidências consistidas no ponto de controle.')
     daily, hourly = bundled_ons('diario'), bundled_ons('horario')
     months = ('2025-10', '2026-10')
@@ -621,7 +700,7 @@ def scenarios():
     duration_card.metric('Maior sequência abaixo do patamar', f'{int(selected.maior_sequencia)} h')
     hourly_view(hourly, day, selected.media_diaria, limit)
     export(summary, 'Baixar diagnóstico diário', f'diagnostico_{key}.csv', index=True)
-    with st.expander('Comparação exploratória com a estação 41020002'):
+    with st.expander('O que a estação 41020002 pode confirmar a jusante'):
         downstream_evidence(intervals, summary, limit, day, daily)
 
 
@@ -658,20 +737,41 @@ def synthesis():
 
 
 def conclusion():
-    st.header('Conclusão')
-    st.write('A plataforma permite consultar a disponibilidade hídrica mensal, descrever a operação diária '
-             'e localizar horários de menor liberação da usina com os dados do ONS.')
-    st.markdown('**Síntese dos resultados de referência**')
+    st.header('Conclusão · o que o painel acrescenta à discussão de Três Marias')
+    st.write(
+        'A principal contribuição não é propor um novo valor de vazão mínima, mas mostrar como a discussão muda quando '
+        'as evidências são organizadas por variável, fonte e escala temporal. Em Três Marias, disponibilidade hídrica, '
+        'operação do reservatório e condição a jusante são partes relacionadas do mesmo problema, porém não são medidas equivalentes.'
+    )
+
+    st.markdown('### Síntese do que o exemplo de Três Marias mostrou')
     table(pd.DataFrame([
-        ('Histórico', 'Cinco meses consecutivos abaixo de 150 m³/s entre junho e outubro de 2024.'),
-        ('Associações', 'Chuva de Andrequicé e vazão natural: r = 0,566 com defasagem de dois meses.'),
-        ('Previsão mensal', 'Climatologia com menor erro global. Persistência com menor erro em M+1 nos quatro meses de baixa vazão.'),
-        ('Operação diária', 'Em outubro de 2026 o volume útil diminuiu de 77,10% para 69,74%.'),
-        ('Diagnóstico horário', 'Divergência entre escalas em 29 de 30 dias elegíveis em outubro de 2025 e 8 de 31 em outubro de 2026.'),
-    ], columns=['Etapa', 'Resultado']))
-    st.write('A contribuição da plataforma é reunir séries e métodos rastreáveis. O experimento de previsão tem 21 meses-alvo por horizonte e apenas quatro meses de baixa vazão. A avaliação a jusante requer série horária consistida e uma estimativa de tempo de viagem.')
-    st.info('As datas e horas da descarga registrada na usina orientam o acompanhamento no trecho a jusante. '
-            'A estação 41020002 identifica o ponto de controle discutido no TCC.')
+        ('Disponibilidade mensal', 'A permanência e a sazonalidade situam as vazões naturais baixas no histórico e mostram sua persistência, sem transformar Q90/Q95 em regra operativa.'),
+        ('Contexto hidroclimático', 'Chuva, ZCAS e bloqueios acrescentam contexto à variabilidade observada; as associações são dependentes do recorte, da defasagem e da cobertura.'),
+        ('Previsão', 'O desempenho médio dos métodos não garante melhor desempenho nos meses de menor disponibilidade, por isso o painel separa horizonte e recorte de avaliação.'),
+        ('Operação diária', 'Afluência, armazenamento, turbinamento, vertimento e defluência precisam ser lidos em conjunto para interpretar a decisão operativa.'),
+        ('Escala horária', 'Uma média diária pode ocultar horas consecutivas de menor liberação. Em outubro de 2026, o diagnóstico encontrou dias em que isso ocorreu no patamar analítico de 300 m³/s.'),
+        ('A jusante', 'A estação 41020002 representa uma verificação distinta da descarga na usina; confirmar efeitos no rio requer série compatível e consideração do tempo de propagação.'),
+    ], columns=['Dimensão', 'Contribuição para o problema']))
+
+    st.markdown('### Contribuição aplicada')
+    st.markdown(
+        '<div class="insight"><b>Do agregado ao episódio:</b> o usuário pode começar pela disponibilidade mensal, '
+        'passar pela operação diária, localizar um dia crítico, abrir os registros horários e então verificar quais '
+        'dados seriam necessários para confrontar o episódio a jusante. Essa sequência transforma fontes antes dispersas '
+        'em um percurso rastreável de análise.</div>',
+        unsafe_allow_html=True,
+    )
+    st.write(
+        'Assim, o painel contribui para a discussão de vazão mínima ao tornar visível uma questão central: um único número '
+        'não descreve sozinho a condição hídrica e operativa de Três Marias. A interpretação depende de saber qual vazão está '
+        'sendo usada, em que local, em que escala e para qual finalidade. O código aberto e a documentação permitem que o mesmo '
+        'princípio seja adaptado a outros reservatórios e problemas, desde que as novas variáveis e regras sejam novamente validadas.'
+    )
+    st.warning(
+        'Limite do estudo: o diagnóstico horário descreve registros de liberação na usina. Ele não substitui a avaliação '
+        'regulatória de conformidade, a definição de vazão ambiental nem a comprovação de efeitos no trecho a jusante.'
+    )
 
 
 

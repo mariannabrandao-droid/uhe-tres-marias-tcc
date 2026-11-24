@@ -14,6 +14,39 @@ from mapas import regional_map
 
 def context_figures(figure):
     """Visões de contexto: localização, funcionamento conceitual e encadeamento de reservatórios."""
+    st.markdown('### Da estrutura física às variáveis monitoradas')
+    photo_path = ROOT / 'foto_vertedouro.png'
+    supplied = photo_path.exists()
+    source = 'https://www.cemig.com.br/wp-content/uploads/2026/02/uhe-tres-marias-862x350.jpg'
+    if supplied:
+        from base64 import b64encode
+        source = 'data:image/png;base64,' + b64encode(photo_path.read_bytes()).decode('ascii')
+    photo_col, reading_col = st.columns([2.3, 1], gap='medium')
+    with reading_col:
+        focus = st.radio('Explore a estrutura', ['Visão geral', 'Armazenamento', 'Turbinamento', 'Vertimento', 'Defluência'], key='physical_focus')
+        descriptions = {
+            'Visão geral': 'A entrada, o estoque e a saída são observados por indicadores diferentes.',
+            'Armazenamento': 'O volume útil descreve o estoque de água no reservatório.',
+            'Turbinamento': 'A água captada segue internamente até a casa de força. O percurso interno não é visível.',
+            'Vertimento': 'A água liberada pelo vertedouro não passa pelas turbinas.',
+            'Defluência': 'A saída da usina é analisada nas escalas diária e horária.',
+        }
+        st.info(descriptions[focus])
+        st.image(str(ROOT / 'esquema_reservatorio.svg'), width='stretch')
+    with photo_col:
+        w, h = (800, 533) if supplied else (862, 350)
+        photo = go.Figure()
+        photo.add_layout_image(dict(source=source, x=0, y=h, sizex=w, sizey=h, xref='x', yref='y', sizing='stretch', layer='below'))
+        labels = [('Armazenamento', 'Reservatório', 570, 155, -85, -48), ('Turbinamento', 'Casa de força', 530, 272, 85, -32), ('Vertimento', 'Vertedouro', 275, 255, -95, -40), ('Defluência', 'Rio a jusante', 610, 420, 70, -35), ('Armazenamento', 'Barramento', 710, 235, 10, -55)] if supplied else [('Armazenamento', 'Reservatório', 310, 95, 15, -52), ('Armazenamento', 'Barramento', 440, 158, 80, -42), ('Turbinamento', 'Tomada de água', 160, 158, -60, -42), ('Turbinamento', 'Casa de força', 205, 278, 100, -42), ('Defluência', 'Rio a jusante', 640, 287, 65, -45)]
+        for category, label, x, y, ax, ay in labels:
+            if focus == 'Visão geral' or category == focus:
+                photo.add_annotation(x=x,y=h-y,text=label,ax=ax,ay=ay,showarrow=True,arrowhead=2,arrowwidth=2,arrowcolor='#0d1d96',bgcolor='#ffffff',bordercolor='#0d1d96',borderpad=5,font=dict(color='#0d1d96',size=12))
+        photo.update_xaxes(range=[0,w],visible=False,fixedrange=True)
+        photo.update_yaxes(range=[0,h],visible=False,fixedrange=True,scaleanchor='x')
+        photo.update_layout(height=520,margin=dict(l=0,r=0,t=0,b=0),paper_bgcolor='white',plot_bgcolor='white')
+        st.plotly_chart(photo,width='stretch',key='physical_photo',config={'displayModeBar':False})
+        st.caption('Fotografia fornecida para o TCC; data e autoria a confirmar.' if supplied else 'Fotografia institucional: Cemig. Nesta perspectiva o vertedouro não está identificado; consulte o esquema ao lado.')
+        st.markdown('[Referência técnica das estruturas — Cemig, PAE, seção D](https://www.cemig.com.br/wp-content/uploads/2025/07/PAE_UHE_Tres_Marias_revF-Tachado.pdf)')
     st.markdown('### Onde a usina está e como a água percorre o sistema')
     left, right = st.columns([1.08, .92], gap='large')
 

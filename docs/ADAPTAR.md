@@ -4,7 +4,7 @@ Faça uma cópia do repositório, rode o exemplo sem alterações e depois adapt
 
 | Bloco | Onde editar | Como conferir |
 | --- | --- | --- |
-| Entrada e navegação | `app.py` inicia o percurso guiado; `app_publica.py`, funções `main` e `glossary`, organiza o menu livre. `painel.py`, `PAGES` e `main`, organiza a sequência guiada. | Confira os rótulos, a tela inicial e as ações de avanço e retorno. |
+| Entrada e navegação | `app.py` inicia o percurso guiado; `app_publica.py`, funções `main`, `monthly` e `correlations`, organiza o menu livre, a agregação mensal e as correlações. `painel.py`, `PAGES` e `main`, organiza a sequência guiada. | Confira os rótulos, a tela inicial e as ações de avanço e retorno. |
 | Cabeçalho e gráficos | `painel.py`, `configure_page` e `graph`, define identidade visual, layout, cores e configuração Plotly. | Confira legenda e eixos em uma janela estreita. Use unidades no eixo e traço ou marcador para distinguir séries importantes. |
 | Exploração de outras bacias | `explorar_ana.py` organiza os formulários, o mapa e as exportações. `consulta_ana.py` define o catálogo, as variáveis, a busca e a leitura do serviço ANA. | Confira os códigos da estação e os níveis de consistência antes de integrar novas séries. [Guia da consulta ANA](CONSULTA_ANA.md) |
 | Contexto e postos | `painel.py`, `context` e primeiro tema de `science`; `postos_defesa.py` define os postos e `mapas.py` lê as camadas. | Atualize códigos, coordenadas, local da usina e ponto de controle em conjunto. Confira os limites das camadas e os códigos preservados como texto. |
